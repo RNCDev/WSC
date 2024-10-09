@@ -6,61 +6,13 @@
     <title>Interactive Membership Grid</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        th, td {
-            border: 1px solid #e0e0e0;
-            padding: 12px 15px;
-            text-align: left;
-        }
-        th {
-            background-color: #f8f8f8;
-            font-weight: bold;
-            color: #333;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-        button {
-            margin: 10px 5px 10px 0;
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .delete-btn {
-            background-color: #f44336;
-        }
-        .delete-btn:hover {
-            background-color: #d32f2f;
-        }
-        .action-column {
-            width: 80px;
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { margin: 10px 5px 10px 0; padding: 5px 10px; }
+        input[type="text"] { width: 90%; padding: 5px; }
+        .action-column { width: 80px; }
     </style>
 </head>
 <body>
@@ -69,7 +21,72 @@
     <button id="goToRoster">Go to Roster</button>
     <table id="memberGrid"></table>
     <script>
-        // ... (JavaScript remains the same as in your original code)
+        let gridData = [];
+        let headers = [];
+        function loadCSV() {
+            Papa.parse('Membership.csv', {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    gridData = results.data;
+                    headers = results.meta.fields;
+                    renderGrid();
+                },
+                error: function(error) {
+                    console.error('Error loading CSV:', error);
+                }
+            });
+        }
+        function renderGrid() {
+            const grid = document.getElementById('memberGrid');
+            grid.innerHTML = '';
+            // Create header row
+            const headerRow = grid.insertRow();
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            headerRow.insertCell().textContent = 'Action';
+            // Create data rows
+            gridData.forEach((row, index) => {
+                const tr = grid.insertRow();
+                headers.forEach(header => {
+                    const td = tr.insertCell();
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = row[header] || '';
+                    input.addEventListener('change', (e) => {
+                        gridData[index][header] = e.target.value;
+                    });
+                    td.appendChild(input);
+                });
+                
+                const actionCell = tr.insertCell();
+                actionCell.className = 'action-column';
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteRow(index);
+                actionCell.appendChild(deleteButton);
+            });
+        }
+        function addRow() {
+            const newRow = {};
+            headers.forEach(header => newRow[header] = '');
+            gridData.push(newRow);
+            renderGrid();
+        }
+        function deleteRow(index) {
+            gridData.splice(index, 1);
+            renderGrid();
+        }
+        function goToRoster() {
+            localStorage.setItem('memberData', JSON.stringify(gridData));
+            window.location.href = 'roster.html';
+        }
+        document.getElementById('addRow').addEventListener('click', addRow);
+        document.getElementById('goToRoster').addEventListener('click', goToRoster);
+        loadCSV();
     </script>
 </body>
 </html>
