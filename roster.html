@@ -91,22 +91,22 @@
             <h2>Red Team</h2>
             <div class="position-group">
                 <h3>Forwards</h3>
-                <ul id="redforward"></ul>
+                <ul id="redForward"></ul>
             </div>
             <div class="position-group">
                 <h3>Defensemen</h3>
-                <ul id="reddefense"></ul>
+                <ul id="redDefense"></ul>
             </div>
         </div>
         <div id="whiteTeam" class="team white-team">
             <h2>White Team</h2>
             <div class="position-group">
                 <h3>Forwards</h3>
-                <ul id="whiteforward"></ul>
+                <ul id="whiteForward"></ul>
             </div>
             <div class="position-group">
                 <h3>Defensemen</h3>
-                <ul id="whitedefense"></ul>
+                <ul id="whiteDefense"></ul>
             </div>
         </div>
     </div>
@@ -116,16 +116,16 @@
             console.log("Displaying rosters for team data:", teamData);
             
             // Clear existing lists
-            document.getElementById('redForwards').innerHTML = '';
+            document.getElementById('redForward').innerHTML = '';
             document.getElementById('redDefense').innerHTML = '';
-            document.getElementById('whiteForwards').innerHTML = '';
+            document.getElementById('whiteForward').innerHTML = '';
             document.getElementById('whiteDefense').innerHTML = '';
         
             teamData.forEach(player => {
                 const li = document.createElement('li');
                 li.textContent = `${player.name} (Tier ${player.tier})`;
                 
-                const listId = `${player.team.toLowerCase()}${player.position.toLowerCase()}`;
+                const listId = `${player.team.toLowerCase()}${player.position}`;
                 const list = document.getElementById(listId);
                 if (list) {
                     list.appendChild(li);
@@ -136,7 +136,7 @@
         }
 
         // Function to load team data (replace this with actual data loading in the future)
-        function loadTeamData() {
+       function loadTeamData() {
             const rosterDataString = localStorage.getItem('rosterData');
             console.log("Retrieved roster data string:", rosterDataString);
             
@@ -156,7 +156,6 @@
                 console.log("No roster data found in localStorage");
             }
         }
-
         // Make sure this function is called when the page loads
         document.addEventListener('DOMContentLoaded', loadTeamData);
         
