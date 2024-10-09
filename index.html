@@ -108,29 +108,35 @@
 
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
-    console.log("Attending players:", attendingPlayers);
 
     if (attendingPlayers.length === 0) {
-        console.warn("No attending players found. Cannot generate rosters.");
+        alert("No attending players found. Cannot generate rosters.");
         return [];
     }
 
-    // Shuffle players
-    const shuffledPlayers = shuffleArray(attendingPlayers);
+    // Parse tiers and sort players by tier descending
+    attendingPlayers.forEach(player => player.Tier = parseFloat(player.Tier));
+    attendingPlayers.sort((a, b) => b.Tier - a.Tier);
 
-    const defensemen = shuffledPlayers.filter(player => player.Defense === "1");
-    const forwards = shuffledPlayers.filter(player => player.Defense === "0");
+    const teams = { Red: [], White: [] };
+    const teamScores = { Red: 0, White: 0 };
 
-    const teams = { Red: { Defense: [], Forward: [] }, White: { Defense: [], Forward: [] } };
+    // Assign players to the team with the lower total tier score
+    attendingPlayers.forEach(player => {
+        const teamName = teamScores.Red <= teamScores.White ? 'Red' : 'White';
+        teams[teamName].push({
+            name: player.Players,
+            position: player.Defense === "1" ? "Defense" : "Forward",
+            team: teamName,
+            tier: player.Tier
+        });
+        teamScores[teamName] += player.Tier;
+    });
 
-    // Distribute players evenly
-    distributePlayersEvenly(defensemen, teams, "Defense");
-    distributePlayersEvenly(forwards, teams, "Forward");
+    console.log(`Red Team Total Tier Score: ${teamScores.Red}`);
+    console.log(`White Team Total Tier Score: ${teamScores.White}`);
 
-    // Balance teams based on total tier score
-    balanceTeams(teams);
-
-    return [...teams.Red.Defense, ...teams.Red.Forward, ...teams.White.Defense, ...teams.White.Forward];
+    return [...teams.Red, ...teams.White];
 }
 
 function shuffleArray(array) {
@@ -148,7 +154,7 @@ function distributePlayersEvenly(players, teams, position) {
             name: player.Players,
             position: position,
             team: team,
-            tier: parseInt(player.Tier)
+            tier: parseFloat(player.Tier)
         });
     });
 }
