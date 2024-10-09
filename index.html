@@ -1,68 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Membership Grid</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <style>
-        /* ... (keep the existing styles) ... */
-    </style>
-</head>
-<body>
-    <h1>Interactive Membership Grid</h1>
-    <p id="loadingMessage">Loading... If you see this message for more than a few seconds, there may be an error.</p>
-    
-    <div class="button-container">
-        <button id="generateRosters">Generate Rosters</button>
-        <button id="goToRosters" style="display: none;">Go to Rosters</button>
-        <button id="saveGrid">Download Updated CSV</button>
-        <button id="addRow">Add New Row</button>
-    </div>
-    <table id="grid"></table>
-    <div id="lastUpdateTime"></div>
+<script>
+    let gridData = [];
+    let headers = [];
+    let generatedTeams = null;
 
-    <script>
-        // Wrap all JavaScript in a try-catch block
-        try {
-            let gridData = [];
-            let headers = [];
-            let generatedTeams = null;
-
-            function loadCSV() {
-                console.log('Attempting to load CSV...');
-                Papa.parse('Membership.csv', {
-                    download: true,
-                    header: true,
-                    complete: function(results) {
-                        console.log('CSV loaded successfully:', results);
-                        gridData = results.data;
-                        headers = results.meta.fields;
-                        renderGrid();
-                    },
-                    error: function(error) {
-                        console.error('Error loading CSV:', error);
-                        document.getElementById('loadingMessage').textContent = 'Error loading CSV. Please check the console for details.';
-                    }
-                });
+    function loadCSV() {
+        console.log('Attempting to load CSV...');
+        Papa.parse('Membership.csv', {
+            download: true,
+            header: true,
+            complete: function(results) {
+                console.log('CSV loaded successfully:', results);
+                gridData = results.data;
+                headers = results.meta.fields;
+                renderGrid();
+            },
+            error: function(error) {
+                console.error('Error loading CSV:', error);
+                document.getElementById('loadingMessage').textContent = 'Error loading CSV. Please check the console for details.';
             }
+        });
+    }
 
-            // ... (keep all other functions as they were) ...
+    function renderGrid() {
+        console.log('Rendering grid...');
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
 
-            // Add event listeners and call loadCSV()
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM fully loaded and parsed');
-                document.getElementById('generateRosters').addEventListener('click', generateBalancedTeams);
-                document.getElementById('goToRosters').addEventListener('click', goToRosters);
-                document.getElementById('saveGrid').addEventListener('click', saveGrid);
-                document.getElementById('addRow').addEventListener('click', addRow);
-                loadCSV();
+        // Create header row
+        const headerRow = document.createElement('tr');
+        headers.forEach(key => {
+            const th = document.createElement('th');
+            th.textContent = key;
+            headerRow.appendChild(th);
+        });
+        grid.appendChild(headerRow);
+
+        // Create data rows
+        gridData.forEach((row, rowIndex) => {
+            const tr = document.createElement('tr');
+            headers.forEach(key => {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.value = row[key] || '';
+                input.addEventListener('change', (e) => {
+                    gridData[rowIndex][key] = e.target.value;
+                    updateLastModifiedTime();
+                });
+                td.appendChild(input);
+                tr.appendChild(td);
             });
+            grid.appendChild(tr);
+        });
 
-        } catch (error) {
-            console.error('An error occurred:', error);
-            document.body.innerHTML += '<p>An error occurred. Please check the console for details.</p>';
-        }
-    </script>
-</body>
-</html>
+        document.getElementById('loadingMessage').style.display = 'none';
+        console.log('Grid rendered successfully');
+    }
+
+    function updateLastModifiedTime() {
+        const now = new Date();
+        document.getElementById('lastUpdateTime').textContent = `Last updated: ${now.toLocaleString()}`;
+    }
+
+    function generateBalancedTeams() {
+        console.log('Generating balanced teams...');
+        // ... (rest of the function remains the same)
+    }
+
+    function goToRosters() {
+        console.log('Going to rosters...');
+        // ... (rest of the function remains the same)
+    }
+
+    function saveGrid() {
+        console.log('Saving grid...');
+        // ... (rest of the function remains the same)
+    }
+
+    function addRow() {
+        console.log('Adding new row...');
+        const newRow = {};
+        headers.forEach(key => {
+            newRow[key] = '';
+        });
+        gridData.push(newRow);
+        renderGrid();
+        updateLastModifiedTime();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded and parsed');
+        document.getElementById('generateRosters').addEventListener('click', generateBalancedTeams);
+        document.getElementById('goToRosters').addEventListener('click', goToRosters);
+        document.getElementById('saveGrid').addEventListener('click', saveGrid);
+        document.getElementById('addRow').addEventListener('click', addRow);
+        loadCSV();
+    });
+</script>
