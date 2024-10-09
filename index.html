@@ -103,71 +103,70 @@ function loadCSV() {
             window.location.href = 'roster.html';
         }
 
-function generateRosters(gridData) {
-
-    // Filter out players who are not attending
-    const attendingPlayers = gridData.filter(player => player.Attendance === "1");
-    console.log("Attending players:", attendingPlayers);
-
-    if (attendingPlayers.length === 0) {
-        console.warn("No attending players found. Check Attendance column in the grid.");
-        return [];
-    }
-    
-    // Sort players by tier (descending) and then by position
-    const sortedPlayers = attendingPlayers.sort((a, b) => {
-        if (parseInt(b.Tier) !== parseInt(a.Tier)) return parseInt(b.Tier) - parseInt(a.Tier);
-        return a.Defense === b.Defense ? 0 : a.Defense === "1" ? -1 : 1;
-    });
-
-    const teams = { Red: [], White: [] };
-    
-    sortedPlayers.forEach((player, index) => {
-        const position = player.Defense === "1" ? "Defense" : "Forward";
-        const team = index % 2 === 0 ? "Red" : "White"; // Alternate between Red and White
+        function generateRosters(gridData) {
+            // Filter out players who are not attending, or include all if none are attending
+            let attendingPlayers = gridData.filter(player => player.Attendance === "1");
+            if (attendingPlayers.length === 0) {
+                console.warn("No players marked as attending. Including all players.");
+                attendingPlayers = gridData;
+            }
+            console.log("Players included in roster generation:", attendingPlayers);
         
-        teams[team].push({
-            name: player.Players,
-            position: position,
-            team: team
-        });
-    });
+            // Sort players by tier (descending) and then by position
+            const sortedPlayers = attendingPlayers.sort((a, b) => {
+                if (parseInt(b.Tier) !== parseInt(a.Tier)) return parseInt(b.Tier) - parseInt(a.Tier);
+                return a.Defense === b.Defense ? 0 : a.Defense === "1" ? -1 : 1;
+            });
+        
+            const teams = { Red: [], White: [] };
+            
+            sortedPlayers.forEach((player, index) => {
+                const position = player.Defense === "1" ? "Defense" : "Forward";
+                const team = index % 2 === 0 ? "Red" : "White"; // Alternate between Red and White
+                
+                teams[team].push({
+                    name: player.Players,
+                    position: position,
+                    team: team
+                });
+            });
+        
+            return [...teams.Red, ...teams.White];
+        }
 
-    return [...teams.Red, ...teams.White];
-}
+        function chooseTeam(teams, positions, position) {
+            const redScore = calculateTeamScore(teams.Red);
+            const whiteScore = calculateTeamScore(teams.White);
+        
+            if (redScore !== whiteScore) {
+                return redScore < whiteScore ? "Red" : "White";
+            }
+        
+            if (position === "Defense") {
+                if (positions.Red.Defense >= 6 && positions.White.Defense < 6) return "White";
+                if (positions.White.Defense >= 6 && positions.Red.Defense < 6) return "Red";
+                return positions.Red.Defense <= positions.White.Defense ? "Red" : "White";
+            }
+        
+            return positions.Red.Forward <= positions.White.Forward ? "Red" : "White";
+        }
+        
+        function calculateTeamScore(team) {
+            return team.reduce((sum, player) => sum + parseInt(player.Tier), 0);
+        }
 
-function chooseTeam(teams, positions, position) {
-    const redScore = calculateTeamScore(teams.Red);
-    const whiteScore = calculateTeamScore(teams.White);
-
-    if (redScore !== whiteScore) {
-        return redScore < whiteScore ? "Red" : "White";
-    }
-
-    if (position === "Defense") {
-        if (positions.Red.Defense >= 6 && positions.White.Defense < 6) return "White";
-        if (positions.White.Defense >= 6 && positions.Red.Defense < 6) return "Red";
-        return positions.Red.Defense <= positions.White.Defense ? "Red" : "White";
-    }
-
-    return positions.Red.Forward <= positions.White.Forward ? "Red" : "White";
-}
-
-function calculateTeamScore(team) {
-    return team.reduce((sum, player) => sum + parseInt(player.Tier), 0);
-}
-
-function generateRoster() {
-    console.log("Grid data before roster generation:", gridData);
-    const rosters = generateRosters(gridData);
-    console.log("Generated rosters:", rosters);
-    if (rosters.length === 0) {
-        console.error("No rosters were generated. Check if any players are marked as attending.");
-    }
-    localStorage.setItem('rosterData', JSON.stringify(rosters));
-    console.log("Roster data saved to localStorage:", localStorage.getItem('rosterData'));
-    window.location.href = 'roster.html';
-}
+        function generateRoster() {
+            console.log("Grid data before roster generation:", gridData);
+            const rosters = generateRosters(gridData);
+            console.log("Generated rosters:", rosters);
+            if (rosters.length === 0) {
+                console.error("No rosters were generated. Check if any players are in the grid data.");
+            } else {
+                localStorage.setItem('rosterData', JSON.stringify(rosters));
+                console.log("Roster data saved to localStorage:", localStorage.getItem('rosterData'));
+                window.location.href = 'roster.html';
+            }
+        }
         
         document.getElementById('addRow').addEventListener('click', addRow);
         document.getElementById('generateRoster').addEventListener('click', generateRoster);
