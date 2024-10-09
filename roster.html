@@ -137,6 +137,9 @@ function loadTeamData() {
         try {
             const rosterData = JSON.parse(rosterDataString);
             console.log("Parsed roster data:", rosterData);
+            if (rosterData.length === 0) {
+                console.warn("Roster data is empty. No teams to display.");
+            }
             displayRosters(rosterData);
         } catch (error) {
             console.error("Error parsing roster data:", error);
