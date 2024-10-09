@@ -106,77 +106,79 @@
             window.location.href = 'roster.html';
         }
 
-        function generateRosters(gridData) {
-            // Filter out players who are not attending
-            const attendingPlayers = gridData.filter(player => player.Attendance === "1");
-            console.log("Attending players:", attendingPlayers);
-        
-            if (attendingPlayers.length === 0) {
-                console.warn("No attending players found. Cannot generate rosters.");
-                return [];
+function generateRosters(gridData) {
+    // Filter out players who are not attending
+    const attendingPlayers = gridData.filter(player => player.Attendance === "1");
+    console.log("Attending players:", attendingPlayers);
+
+    if (attendingPlayers.length === 0) {
+        console.warn("No attending players found. Cannot generate rosters.");
+        return [];
+    }
+
+    // Separate defensemen and forwards
+    const defensemen = attendingPlayers.filter(player => player.Defense === "1");
+    const forwards = attendingPlayers.filter(player => player.Defense === "0");
+
+    // Sort players by tier (descending)
+    defensemen.sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
+    forwards.sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
+
+    const teams = { Red: [], White: [] };
+
+    // Distribute defensemen
+    defensemen.forEach((player, index) => {
+        const team = index % 2 === 0 ? "Red" : "White";
+        teams[team].push({
+            name: player.Players,
+            position: "Defense",
+            team: team,
+            tier: parseInt(player.Tier)
+        });
+    });
+
+    // Distribute forwards
+    forwards.forEach((player, index) => {
+        const team = index % 2 === 0 ? "Red" : "White";
+        teams[team].push({
+            name: player.Players,
+            position: "Forward",
+            team: team,
+            tier: parseInt(player.Tier)
+        });
+    });
+
+    // Balance teams based on total tier score
+    balanceTeams(teams);
+
+    return [...teams.Red, ...teams.White];
+}
+
+function balanceTeams(teams) {
+    let redScore = teams.Red.reduce((sum, player) => sum + player.tier, 0);
+    let whiteScore = teams.White.reduce((sum, player) => sum + player.tier, 0);
+
+    while (Math.abs(redScore - whiteScore) > 1) {
+        const sourceTeam = redScore > whiteScore ? "Red" : "White";
+        const targetTeam = sourceTeam === "Red" ? "White" : "Red";
+
+        // Find the player with the lowest tier that can be moved
+        const playerToMove = teams[sourceTeam].reduce((min, p) => {
+            if (p.tier < min.tier && teams[targetTeam].filter(tp => tp.position === p.position).length < 6) {
+                return p;
             }
-        
-            // Sort players by tier (descending) and then by position
-            const sortedPlayers = attendingPlayers.sort((a, b) => {
-                if (parseInt(b.Tier) !== parseInt(a.Tier)) return parseInt(b.Tier) - parseInt(a.Tier);
-                return a.Defense === b.Defense ? 0 : a.Defense === "1" ? -1 : 1;
-            });
-        
-            const teams = { Red: [], White: [] };
-            
-            // Separate defensemen and forwards
-            const defensemen = sortedPlayers.filter(player => player.Defense === "1");
-            const forwards = sortedPlayers.filter(player => player.Defense === "0");
-        
-            // Distribute defensemen
-            defensemen.forEach((player, index) => {
-                const team = index % 2 === 0 ? "Red" : "White";
-                teams[team].push({
-                    name: player.Players,
-                    position: "Defense",
-                    team: team,
-                    tier: parseInt(player.Tier)
-                });
-            });
-        
-            // Distribute forwards
-            forwards.forEach((player, index) => {
-                const team = index % 2 === 0 ? "Red" : "White";
-                teams[team].push({
-                    name: player.Players,
-                    position: "Forward",
-                    team: team,
-                    tier: parseInt(player.Tier)
-                });
-            });
-        
-            // Balance teams based on total tier score
-            balanceTeams(teams);
-        
-            return [...teams.Red, ...teams.White];
-        }
-        
-        function balanceTeams(teams) {
-            let redScore = teams.Red.reduce((sum, player) => sum + player.tier, 0);
-            let whiteScore = teams.White.reduce((sum, player) => sum + player.tier, 0);
-        
-            while (Math.abs(redScore - whiteScore) > 1) {
-                if (redScore > whiteScore) {
-                    // Move the lowest tier player from Red to White
-                    const playerToMove = teams.Red.reduce((min, p) => p.tier < min.tier ? p : min, teams.Red[0]);
-                    teams.Red = teams.Red.filter(p => p !== playerToMove);
-                    teams.White.push({...playerToMove, team: 'White'});
-                } else {
-                    // Move the lowest tier player from White to Red
-                    const playerToMove = teams.White.reduce((min, p) => p.tier < min.tier ? p : min, teams.White[0]);
-                    teams.White = teams.White.filter(p => p !== playerToMove);
-                    teams.Red.push({...playerToMove, team: 'Red'});
-                }
-                redScore = teams.Red.reduce((sum, player) => sum + player.tier, 0);
-                whiteScore = teams.White.reduce((sum, player) => sum + player.tier, 0);
-            }
-        }
-        
+            return min;
+        }, teams[sourceTeam][0]);
+
+        // Move the player
+        teams[sourceTeam] = teams[sourceTeam].filter(p => p !== playerToMove);
+        teams[targetTeam].push({...playerToMove, team: targetTeam});
+
+        // Recalculate scores
+        redScore = teams.Red.reduce((sum, player) => sum + player.tier, 0);
+        whiteScore = teams.White.reduce((sum, player) => sum + player.tier, 0);
+    }
+}        
         function generateRoster() {
             console.log("Grid data before roster generation:", gridData);
             const rosters = generateRosters(gridData);
