@@ -123,7 +123,14 @@
                 const li = document.createElement('li');
                 li.textContent = player.name;
                 
-                const listId = `${player.team.toLowerCase()}${player.position}s`;
+                let position = player.position.toLowerCase();
+                if (position === 'defense' || position === 'defensemen') {
+                    position = 'defense';
+                } else if (position === 'forward' || position === 'forwards') {
+                    position = 'forward';
+                }
+                
+                const listId = `${player.team.toLowerCase()}${position}s`;
                 const list = document.getElementById(listId);
                 if (list) {
                     list.appendChild(li);
