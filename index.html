@@ -115,10 +115,11 @@ function generateRosters(gridData) {
         return [];
     }
 
-    const defensemen = attendingPlayers.filter(player => player.Defense === "1")
-        .sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
-    const forwards = attendingPlayers.filter(player => player.Defense === "0")
-        .sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
+    // Shuffle players
+    const shuffledPlayers = shuffleArray(attendingPlayers);
+
+    const defensemen = shuffledPlayers.filter(player => player.Defense === "1");
+    const forwards = shuffledPlayers.filter(player => player.Defense === "0");
 
     const teams = { Red: { Defense: [], Forward: [] }, White: { Defense: [], Forward: [] } };
 
@@ -130,6 +131,14 @@ function generateRosters(gridData) {
     balanceTeams(teams);
 
     return [...teams.Red.Defense, ...teams.Red.Forward, ...teams.White.Defense, ...teams.White.Forward];
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
 function distributePlayersEvenly(players, teams, position) {
@@ -156,12 +165,20 @@ function balanceTeams(teams) {
         const targetTeam = sourceTeam === "Red" ? "White" : "Red";
 
         // Find the position with more players in the source team
-        const position = teams[sourceTeam].Defense.length > teams[sourceTeam].Forward.length ? "Defense" : "Forward";
+        const sourcePositions = teams[sourceTeam].Defense.length > teams[sourceTeam].Forward.length ? ["Defense", "Forward"] : ["Forward", "Defense"];
+        
+        let playerToMove;
+        for (const position of sourcePositions) {
+            if (teams[sourceTeam][position].length > teams[targetTeam][position].length) {
+                playerToMove = teams[sourceTeam][position].reduce((min, p) => p.tier < min.tier ? p : min);
+                if (playerToMove) break;
+            }
+        }
 
-        // Find the player with the lowest tier in that position
-        const playerToMove = teams[sourceTeam][position].reduce((min, p) => p.tier < min.tier ? p : min);
+        if (!playerToMove) break; // If we can't move any players, break the loop
 
         // Move the player
+        const position = playerToMove.position;
         teams[sourceTeam][position] = teams[sourceTeam][position].filter(p => p !== playerToMove);
         playerToMove.team = targetTeam;
         teams[targetTeam][position].push(playerToMove);
@@ -170,7 +187,7 @@ function balanceTeams(teams) {
         redScore = getTeamScore(teams.Red);
         whiteScore = getTeamScore(teams.White);
     }
-}   
+}
         function generateRoster() {
             console.log("Grid data before roster generation:", gridData);
             const rosters = generateRosters(gridData);
