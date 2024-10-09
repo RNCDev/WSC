@@ -113,26 +113,19 @@
 
     <script>
         function displayRosters(teamData) {
+            console.log("Displaying rosters for team data:", teamData);
+            
             // Clear existing lists
             document.getElementById('redForwards').innerHTML = '';
             document.getElementById('redDefense').innerHTML = '';
             document.getElementById('whiteForwards').innerHTML = '';
             document.getElementById('whiteDefense').innerHTML = '';
-
-            console.log("Displaying rosters for team data:", teamData);
-            
+        
             teamData.forEach(player => {
                 const li = document.createElement('li');
-                li.textContent = player.name;
+                li.textContent = `${player.name} (Tier ${player.tier})`;
                 
-                let position = player.position.toLowerCase();
-                if (position === 'defense' || position === 'defensemen') {
-                    position = 'defense';
-                } else if (position === 'forward' || position === 'forwards') {
-                    position = 'forward';
-                }
-                
-                const listId = `${player.team.toLowerCase()}${position}s`;
+                const listId = `${player.team.toLowerCase()}${player.position.toLowerCase()}s`;
                 const list = document.getElementById(listId);
                 if (list) {
                     list.appendChild(li);
