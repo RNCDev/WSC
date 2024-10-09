@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membership Editor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@11.1.0/dist/handsontable.full.min.css">
+    <style>
+        #rostersButton {
+            display: none;
+        }
+        #gridContainer {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Membership Editor</h1>
+        <input type="file" id="csvFileInput" accept=".csv" />
+        <button id="generateRostersButton">Generate Rosters</button>
+        <button id="rostersButton">Go to Rosters</button>
+    </header>
+
+    <div id="gridContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@11.1.0/dist/handsontable.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        const csvInput = document.getElementById('csvFileInput');
+        const generateRostersButton = document.getElementById('generateRostersButton');
+        const rostersButton = document.getElementById('rostersButton');
+        const gridContainer = document.getElementById('gridContainer');
+        let hot;
+
+        csvInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                Papa.parse(file, {
+                    header: true,
+                    complete: function(results) {
+                        createGrid(results.data);
+                    }
+                });
+            }
+        }
+
+        function createGrid(data) {
+            if (hot) {
+                hot.destroy(); // Destroy the previous instance of Handsontable if it exists
+            }
+
+            hot = new Handsontable(gridContainer, {
+                data: data,
+                colHeaders: Object.keys(data[0]),
+                columns: Object.keys(data[0]).map(() => ({ editor: 'text' })),
+                rowHeaders: true,
+                stretchH: 'all',
+                licenseKey: 'non-commercial-and-evaluation'
+            });
+        }
+
+        generateRostersButton.addEventListener('click', function() {
+            // Logic for generating rosters can go here
+            alert('Rosters generated!');
+
+            // Show the "Go to Rosters" button after generating rosters
+            rostersButton.style.display = 'inline-block';
+        });
+
+        rostersButton.addEventListener('click', function() {
+            // Logic for navigating to the rosters section or page can go here
+            alert('Navigating to Rosters!');
+        });
+    </script>
+</body>
+</html>
