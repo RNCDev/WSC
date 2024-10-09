@@ -118,7 +118,9 @@
             document.getElementById('redDefense').innerHTML = '';
             document.getElementById('whiteForwards').innerHTML = '';
             document.getElementById('whiteDefense').innerHTML = '';
-        
+
+            console.log("Displaying rosters for team data:", teamData);
+            
             teamData.forEach(player => {
                 const li = document.createElement('li');
                 li.textContent = player.name;
