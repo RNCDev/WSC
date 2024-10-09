@@ -87,26 +87,26 @@
     <button id="returnToGrid" class="return-button">Return to Grid</button>
     
     <div class="container">
-       <div id="redTeam" class="team red-team">
+        <div id="redTeam" class="team red-team">
             <h2>Red Team</h2>
             <div class="position-group">
                 <h3>Forwards</h3>
-                <ul id="redForwards"></ul>
+                <ul id="redforward"></ul>
             </div>
             <div class="position-group">
                 <h3>Defensemen</h3>
-                <ul id="redDefense"></ul>
+                <ul id="reddefense"></ul>
             </div>
         </div>
         <div id="whiteTeam" class="team white-team">
             <h2>White Team</h2>
             <div class="position-group">
                 <h3>Forwards</h3>
-                <ul id="whiteForwards"></ul>
+                <ul id="whiteforward"></ul>
             </div>
             <div class="position-group">
                 <h3>Defensemen</h3>
-                <ul id="whiteDefense"></ul>
+                <ul id="whitedefense"></ul>
             </div>
         </div>
     </div>
@@ -125,12 +125,12 @@
                 const li = document.createElement('li');
                 li.textContent = `${player.name} (Tier ${player.tier})`;
                 
-                const listId = `${player.team.toLowerCase()}${player.position.toLowerCase()}s`;
+                const listId = `${player.team.toLowerCase()}${player.position.toLowerCase()}`;
                 const list = document.getElementById(listId);
                 if (list) {
                     list.appendChild(li);
                 } else {
-                    console.error(`List not found for player: ${player.name}, team: ${player.team}, position: ${player.position}`);
+                    console.error(`List not found for player: ${player.name}, team: ${player.team}, position: ${player.position}, listId: ${listId}`);
                 }
             });
         }
@@ -142,14 +142,7 @@
             
             if (rosterDataString) {
                 try {
-                    // Check if the data is already an object
-                    let rosterData = JSON.parse(rosterDataString);
-                    
-                    // If it's a string (already stringified), parse it again
-                    if (typeof rosterData === 'string') {
-                        rosterData = JSON.parse(rosterData);
-                    }
-                    
+                    const rosterData = JSON.parse(rosterDataString);
                     console.log("Parsed roster data:", rosterData);
                     if (rosterData.length === 0) {
                         console.warn("Roster data is empty. No teams to display.");
@@ -164,6 +157,7 @@
             }
         }
 
+        // Make sure this function is called when the page loads
         document.addEventListener('DOMContentLoaded', loadTeamData);
         
         // Add event listener for the return button
