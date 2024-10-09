@@ -5,45 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Rosters</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; display: flex; }
-        .team { width: 50%; padding: 10px; }
-        h2 { color: #333; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin-bottom: 5px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .team {
+            flex: 1;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .red-team {
+            border-top: 5px solid #ff4136;
+        }
+        .white-team {
+            border-top: 5px solid #7FDBFF;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .position-group {
+            margin-bottom: 20px;
+        }
+        h3 {
+            color: #666;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #f9f9f9;
+            margin-bottom: 5px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        li:hover {
+            background-color: #e9e9e9;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="team">
-        <h2>Red Team</h2>
-        <ul id="redTeam"></ul>
-    </div>
-    <div class="team">
-        <h2>White Team</h2>
-        <ul id="whiteTeam"></ul>
+    <div class="container">
+        <div id="redTeam" class="team red-team">
+            <h2>Red Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="redForwards"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="redDefense"></ul>
+            </div>
+        </div>
+        <div id="whiteTeam" class="team white-team">
+            <h2>White Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="whiteForwards"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="whiteDefense"></ul>
+            </div>
+        </div>
     </div>
 
     <script>
-        function displayRosters() {
-            const memberData = JSON.parse(localStorage.getItem('memberData'));
-            const midpoint = Math.ceil(memberData.length / 2);
-            
-            const redTeam = memberData.slice(0, midpoint);
-            const whiteTeam = memberData.slice(midpoint);
+        function displayRosters(teamData) {
+            // Clear existing lists
+            document.getElementById('redForwards').innerHTML = '';
+            document.getElementById('redDefense').innerHTML = '';
+            document.getElementById('whiteForwards').innerHTML = '';
+            document.getElementById('whiteDefense').innerHTML = '';
 
-            function populateTeamList(teamData, elementId) {
-                const list = document.getElementById(elementId);
-                teamData.forEach(player => {
-                    const li = document.createElement('li');
-                    li.textContent = player.Players; // Assuming 'Players' is the column name for player names
-                    list.appendChild(li);
-                });
-            }
-
-            populateTeamList(redTeam, 'redTeam');
-            populateTeamList(whiteTeam, 'whiteTeam');
+            teamData.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = player.name;
+                
+                const listId = `${player.team.toLowerCase()}${player.position}s`;
+                document.getElementById(listId).appendChild(li);
+            });
         }
 
-        displayRosters();
+        // Function to load team data (replace this with actual data loading in the future)
+        function loadTeamData() {
+            // This is a placeholder. In the future, this function will load the JSON data
+            // from your team generator function or an API call.
+            const placeholderData = [
+                { name: "John Doe", position: "Forward", team: "Red" },
+                { name: "Jane Smith", position: "Defense", team: "White" },
+                // ... more player data ...
+            ];
+
+            // For now, we'll use the placeholder data
+            displayRosters(placeholderData);
+        }
+
+        // Load team data when the page loads
+        loadTeamData();
     </script>
 </body>
 </html>
