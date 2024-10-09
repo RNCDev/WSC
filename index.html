@@ -24,7 +24,7 @@
             background-color: #f2f2f2;
         }
         #grid input {
-            width: 100%;
+            width: calc(100% - 10px);
             box-sizing: border-box;
             border: none;
             background-color: transparent;
@@ -37,18 +37,36 @@
             margin-right: 10px;
             cursor: pointer;
         }
+        #lastUpdateTime {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .delete-row, .add-row {
+            cursor: pointer;
+            padding: 2px 5px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        .add-row {
+            background-color: #4CAF50;
+        }
     </style>
 </head>
 <body>
     <div class="button-container">
         <button id="generateRosters">Generate Rosters</button>
         <button id="goToRosters" style="display: none;">Go to Rosters</button>
-        <button id="saveGrid">Save Grid</button>
+        <button id="saveGrid">Download Updated CSV</button>
+        <button id="addRow">Add New Row</button>
     </div>
     <table id="grid"></table>
+    <div id="lastUpdateTime"></div>
 
     <script>
         let gridData = [];
+        let headers = [];
 
         // Function to load and parse CSV
         function loadCSV() {
@@ -57,6 +75,7 @@
                 header: true,
                 complete: function(results) {
                     gridData = results.data;
+                    headers = results.meta.fields;
                     renderGrid();
                 }
             });
@@ -69,28 +88,72 @@
 
             // Create header row
             const headerRow = document.createElement('tr');
-            Object.keys(gridData[0]).forEach(key => {
+            headers.forEach(key => {
                 const th = document.createElement('th');
                 th.textContent = key;
                 headerRow.appendChild(th);
             });
+            const actionTh = document.createElement('th');
+            actionTh.textContent = 'Action';
+            headerRow.appendChild(actionTh);
             grid.appendChild(headerRow);
 
             // Create data rows
             gridData.forEach((row, rowIndex) => {
-                const tr = document.createElement('tr');
-                Object.keys(row).forEach(key => {
-                    const td = document.createElement('td');
-                    const input = document.createElement('input');
-                    input.value = row[key];
-                    input.addEventListener('change', (e) => {
-                        gridData[rowIndex][key] = e.target.value;
-                    });
-                    td.appendChild(input);
-                    tr.appendChild(td);
-                });
-                grid.appendChild(tr);
+                grid.appendChild(createDataRow(row, rowIndex));
             });
+        }
+
+        // Function to create a data row
+        function createDataRow(row, rowIndex) {
+            const tr = document.createElement('tr');
+            headers.forEach(key => {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.value = row[key] || '';
+                input.addEventListener('change', (e) => {
+                    gridData[rowIndex][key] = e.target.value;
+                    updateLastModifiedTime();
+                });
+                td.appendChild(input);
+                tr.appendChild(td);
+            });
+            
+            // Add delete button
+            const actionTd = document.createElement('td');
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'delete-row';
+            deleteButton.addEventListener('click', () => deleteRow(rowIndex));
+            actionTd.appendChild(deleteButton);
+            tr.appendChild(actionTd);
+
+            return tr;
+        }
+
+        // Function to add a new row
+        function addRow() {
+            const newRow = {};
+            headers.forEach(key => {
+                newRow[key] = '';
+            });
+            gridData.push(newRow);
+            const grid = document.getElementById('grid');
+            grid.appendChild(createDataRow(newRow, gridData.length - 1));
+            updateLastModifiedTime();
+        }
+
+        // Function to delete a row
+        function deleteRow(rowIndex) {
+            gridData.splice(rowIndex, 1);
+            renderGrid();
+            updateLastModifiedTime();
+        }
+
+        // Function to update last modified time
+        function updateLastModifiedTime() {
+            const now = new Date();
+            document.getElementById('lastUpdateTime').textContent = `Last updated: ${now.toLocaleString()}`;
         }
 
         // Function to generate rosters (placeholder)
@@ -124,6 +187,7 @@
         document.getElementById('generateRosters').addEventListener('click', generateRosters);
         document.getElementById('goToRosters').addEventListener('click', goToRosters);
         document.getElementById('saveGrid').addEventListener('click', saveGrid);
+        document.getElementById('addRow').addEventListener('click', addRow);
 
         // Load CSV on page load
         loadCSV();
