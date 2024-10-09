@@ -46,12 +46,15 @@
                     console.log('CSV Text:', csvText); // Debugging: See the raw CSV text.
                     
                     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-                    console.log('Parsed Results:', results.data); // Debugging: Check the parsed data.
+                    console.log('Parsed Results:', results); // Debugging: Check the parsed results.
                     
-                    if (results.data && results.data.length > 0) {
-                        createGrid(results.data);
+                    const data = results.data.filter(row => Object.values(row).some(value => value)); // Filter out any completely empty rows.
+                    console.log('Filtered Data:', data); // Debugging: See the filtered data.
+
+                    if (data && data.length > 0) {
+                        createGrid(data);
                     } else {
-                        alert('No data found in the CSV. Please ensure the file has content.');
+                        alert('No valid data found in the CSV. Please ensure the file has content.');
                     }
                 };
                 reader.readAsText(file);
