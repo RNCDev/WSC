@@ -129,19 +129,25 @@
         }
 
         // Function to load team data (replace this with actual data loading in the future)
-        function loadTeamData() {
-            // This is a placeholder. In the future, this function will load the JSON data
-            // from your team generator function or an API call.
-            const placeholderData = [
-                { name: "John Doe", position: "Forward", team: "Red" },
-                { name: "Jane Smith", position: "Defense", team: "White" },
-                // ... more player data ...
-            ];
-
-            // For now, we'll use the placeholder data
-            displayRosters(placeholderData);
+function loadTeamData() {
+    const rosterDataString = localStorage.getItem('rosterData');
+    console.log("Retrieved roster data string:", rosterDataString);
+    
+    if (rosterDataString) {
+        try {
+            const rosterData = JSON.parse(rosterDataString);
+            console.log("Parsed roster data:", rosterData);
+            displayRosters(rosterData);
+        } catch (error) {
+            console.error("Error parsing roster data:", error);
         }
+    } else {
+        console.log("No roster data found in localStorage");
+    }
+}
 
+        document.addEventListener('DOMContentLoaded', loadTeamData);
+        
         // Add event listener for the return button
         document.getElementById('returnToGrid').addEventListener('click', function() {
             window.location.href = 'index.html';
