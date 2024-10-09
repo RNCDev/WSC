@@ -109,11 +109,6 @@
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
 
-    if (attendingPlayers.length === 0) {
-        alert("No attending players found. Cannot generate rosters.");
-        return [];
-    }
-
     // Parse tiers and sort players by tier descending
     attendingPlayers.forEach(player => player.Tier = parseFloat(player.Tier));
     attendingPlayers.sort((a, b) => b.Tier - a.Tier);
