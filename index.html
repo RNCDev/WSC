@@ -108,87 +108,151 @@
 
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
+    if (attendingPlayers.length === 0) {
+        console.warn("No attending players found. Cannot generate rosters.");
+        return [];
+    }
 
-    // Parse tiers and sort players by tier descending
-    attendingPlayers.forEach(player => player.Tier = parseFloat(player.Tier));
-    attendingPlayers.sort((a, b) => b.Tier - a.Tier);
+    // Parse tiers and add position property
+    attendingPlayers.forEach(player => {
+        player.Tier = parseFloat(player.Tier);
+        player.position = player.Defense === "1" ? "Defense" : "Forward";
+    });
+
+    // Separate players by position
+    const defensePlayers = attendingPlayers.filter(player => player.position === "Defense");
+    const forwardPlayers = attendingPlayers.filter(player => player.position === "Forward");
 
     const teams = { Red: [], White: [] };
     const teamScores = { Red: 0, White: 0 };
+    const teamPositions = {
+        Red: { Defense: 0, Forward: 0 },
+        White: { Defense: 0, Forward: 0 },
+    };
 
-    // Assign players to the team with the lower total tier score
-    attendingPlayers.forEach(player => {
-        const teamName = teamScores.Red <= teamScores.White ? 'Red' : 'White';
-        teams[teamName].push({
-            name: player.Players,
-            position: player.Defense === "1" ? "Defense" : "Forward",
-            team: teamName,
-            tier: player.Tier
-        });
-        teamScores[teamName] += player.Tier;
-    });
+    // Assign players by position with balancing
+    assignPlayersByPosition(defensePlayers);
+    assignPlayersByPosition(forwardPlayers);
 
-    console.log(`Red Team Total Tier Score: ${teamScores.Red}`);
-    console.log(`White Team Total Tier Score: ${teamScores.White}`);
+    // Balance positions if necessary
+    balancePositions();
+
+    // Balance teams by swapping players
+    balanceTeams();
+
+    console.log(`Final Red Team Total Tier Score: ${teamScores.Red}`);
+    console.log(`Final White Team Total Tier Score: ${teamScores.White}`);
 
     return [...teams.Red, ...teams.White];
-}
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
+    // Helper function to assign players by position
+    function assignPlayersByPosition(players) {
+        // Sort players by tier descending
+        players.sort((a, b) => b.Tier - a.Tier);
 
-function distributePlayersEvenly(players, teams, position) {
-    players.forEach((player, index) => {
-        const team = index % 2 === 0 ? "Red" : "White";
-        teams[team][position].push({
-            name: player.Players,
-            position: position,
-            team: team,
-            tier: parseFloat(player.Tier)
+        players.forEach(player => {
+            // Choose the team with the lower total tier score for this position
+            const teamName = teamPositions.Red[player.position] <= teamPositions.White[player.position] ? 'Red' : 'White';
+
+            teams[teamName].push({
+                name: player.Players,
+                position: player.position,
+                team: teamName,
+                tier: player.Tier
+            });
+
+            teamScores[teamName] += player.Tier;
+            teamPositions[teamName][player.position]++;
         });
-    });
-}
+    }
 
-function balanceTeams(teams) {
-    const getTeamScore = (team) => 
-        [...team.Defense, ...team.Forward].reduce((sum, player) => sum + player.tier, 0);
+    // Helper function to balance positions between teams
+    function balancePositions() {
+        ['Defense', 'Forward'].forEach(position => {
+            let redCount = teamPositions.Red[position];
+            let whiteCount = teamPositions.White[position];
 
-    let redScore = getTeamScore(teams.Red);
-    let whiteScore = getTeamScore(teams.White);
+            while (Math.abs(redCount - whiteCount) > 1) {
+                const sourceTeam = redCount > whiteCount ? 'Red' : 'White';
+                const targetTeam = sourceTeam === 'Red' ? 'White' : 'Red';
 
-    while (Math.abs(redScore - whiteScore) > 1) {
-        const sourceTeam = redScore > whiteScore ? "Red" : "White";
-        const targetTeam = sourceTeam === "Red" ? "White" : "Red";
+                // Find the lowest-tier player in the source team for this position
+                const sourcePlayers = teams[sourceTeam].filter(p => p.position === position);
+                if (sourcePlayers.length === 0) break;
 
-        // Find the position with more players in the source team
-        const sourcePositions = teams[sourceTeam].Defense.length > teams[sourceTeam].Forward.length ? ["Defense", "Forward"] : ["Forward", "Defense"];
-        
-        let playerToMove;
-        for (const position of sourcePositions) {
-            if (teams[sourceTeam][position].length > teams[targetTeam][position].length) {
-                playerToMove = teams[sourceTeam][position].reduce((min, p) => p.tier < min.tier ? p : min);
-                if (playerToMove) break;
+                const playerToMove = sourcePlayers.reduce((minPlayer, p) => (p.tier < minPlayer.tier ? p : minPlayer));
+
+                // Move the player
+                teams[sourceTeam] = teams[sourceTeam].filter(p => p !== playerToMove);
+                teams[targetTeam].push(playerToMove);
+                playerToMove.team = targetTeam;
+
+                // Update scores and counts
+                teamScores[sourceTeam] -= playerToMove.tier;
+                teamScores[targetTeam] += playerToMove.tier;
+
+                teamPositions[sourceTeam][position]--;
+                teamPositions[targetTeam][position]++;
+
+                redCount = teamPositions.Red[position];
+                whiteCount = teamPositions.White[position];
+            }
+        });
+    }
+
+    // Helper function to balance team tier scores by swapping players
+    function balanceTeams() {
+        let redScore = teamScores.Red;
+        let whiteScore = teamScores.White;
+
+        let improved = true;
+        while (improved && Math.abs(redScore - whiteScore) > 0.5) {
+            improved = false;
+
+            const sourceTeam = redScore > whiteScore ? 'Red' : 'White';
+            const targetTeam = sourceTeam === 'Red' ? 'White' : 'Red';
+
+            // Attempt to find a swap that improves the balance
+            const sourcePlayers = teams[sourceTeam];
+            const targetPlayers = teams[targetTeam];
+
+            outerLoop:
+            for (let i = 0; i < sourcePlayers.length; i++) {
+                for (let j = 0; j < targetPlayers.length; j++) {
+                    const sourcePlayer = sourcePlayers[i];
+                    const targetPlayer = targetPlayers[j];
+
+                    // Swap players only if they play the same position
+                    if (sourcePlayer.position !== targetPlayer.position) continue;
+
+                    // Calculate new scores if swapped
+                    const newRedScore = redScore - sourcePlayer.tier + targetPlayer.tier;
+                    const newWhiteScore = whiteScore - targetPlayer.tier + sourcePlayer.tier;
+                    const newDifference = Math.abs(newRedScore - newWhiteScore);
+
+                    if (newDifference < Math.abs(redScore - whiteScore)) {
+                        // Perform swap
+                        teams[sourceTeam][i] = targetPlayer;
+                        teams[targetTeam][j] = sourcePlayer;
+
+                        sourcePlayer.team = targetTeam;
+                        targetPlayer.team = sourceTeam;
+
+                        teamScores[sourceTeam] = newRedScore;
+                        teamScores[targetTeam] = newWhiteScore;
+
+                        redScore = newRedScore;
+                        whiteScore = newWhiteScore;
+
+                        improved = true;
+                        break outerLoop;
+                    }
+                }
             }
         }
-
-        if (!playerToMove) break; // If we can't move any players, break the loop
-
-        // Move the player
-        const position = playerToMove.position;
-        teams[sourceTeam][position] = teams[sourceTeam][position].filter(p => p !== playerToMove);
-        playerToMove.team = targetTeam;
-        teams[targetTeam][position].push(playerToMove);
-
-        // Recalculate scores
-        redScore = getTeamScore(teams.Red);
-        whiteScore = getTeamScore(teams.White);
     }
 }
+
         function generateRoster() {
             console.log("Grid data before roster generation:", gridData);
             const rosters = generateRosters(gridData);
