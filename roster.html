@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Rosters</title>
     <style>
+        .return-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .return-button:hover {
+            background-color: #45a049;
+        }
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f0f0f0;
@@ -69,6 +84,8 @@
     </style>
 </head>
 <body>
+    <button id="returnToGrid" class="return-button">Return to Grid</button>
+    
     <div class="container">
         <div id="redTeam" class="team red-team">
             <h2>Red Team</h2>
@@ -125,8 +142,14 @@
             displayRosters(placeholderData);
         }
 
+        // Add event listener for the return button
+        document.getElementById('returnToGrid').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+
         // Load team data when the page loads
         loadTeamData();
+
     </script>
 </body>
 </html>
