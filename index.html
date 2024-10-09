@@ -11,10 +11,10 @@
         th, td { 
             padding: 6px 8px; 
             text-align: left; 
-            border-bottom: 1px solid #e0e0e0; /* Soft gray border */
+            border-bottom: 1px solid #e0e0e0;
         }
-        th { background-color: #f2f2f2; }
-        td:last-child { background-color: transparent; } /* Only make data cells in last column transparent */
+        th { background-color: #f2f2f2 !important; } /* Force background on all headers */
+        td:last-child { background-color: transparent; }
         button { margin: 10px 5px 10px 0; padding: 5px 10px; }
         input[type="text"] { 
             width: 90%; 
@@ -24,6 +24,10 @@
             font-size: 14px;
         }
         .action-column { width: 80px; }
+        /* Specific rule for the last header */
+        #memberGrid tr:first-child th:last-child {
+            background-color: #f2f2f2 !important;
+        }
     </style>
 </head>
 <body>
