@@ -107,7 +107,6 @@
         }
 
 function generateRosters(gridData) {
-    // Filter out players who are not attending
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
     console.log("Attending players:", attendingPlayers);
 
@@ -116,69 +115,62 @@ function generateRosters(gridData) {
         return [];
     }
 
-    // Separate defensemen and forwards
-    const defensemen = attendingPlayers.filter(player => player.Defense === "1");
-    const forwards = attendingPlayers.filter(player => player.Defense === "0");
+    const defensemen = attendingPlayers.filter(player => player.Defense === "1")
+        .sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
+    const forwards = attendingPlayers.filter(player => player.Defense === "0")
+        .sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
 
-    // Sort players by tier (descending)
-    defensemen.sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
-    forwards.sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
+    const teams = { Red: { Defense: [], Forward: [] }, White: { Defense: [], Forward: [] } };
 
-    const teams = { Red: [], White: [] };
-
-    // Distribute defensemen
-    defensemen.forEach((player, index) => {
-        const team = index % 2 === 0 ? "Red" : "White";
-        teams[team].push({
-            name: player.Players,
-            position: "Defense",
-            team: team,
-            tier: parseInt(player.Tier)
-        });
-    });
-
-    // Distribute forwards
-    forwards.forEach((player, index) => {
-        const team = index % 2 === 0 ? "Red" : "White";
-        teams[team].push({
-            name: player.Players,
-            position: "Forward",
-            team: team,
-            tier: parseInt(player.Tier)
-        });
-    });
+    // Distribute players evenly
+    distributePlayersEvenly(defensemen, teams, "Defense");
+    distributePlayersEvenly(forwards, teams, "Forward");
 
     // Balance teams based on total tier score
     balanceTeams(teams);
 
-    return [...teams.Red, ...teams.White];
+    return [...teams.Red.Defense, ...teams.Red.Forward, ...teams.White.Defense, ...teams.White.Forward];
+}
+
+function distributePlayersEvenly(players, teams, position) {
+    players.forEach((player, index) => {
+        const team = index % 2 === 0 ? "Red" : "White";
+        teams[team][position].push({
+            name: player.Players,
+            position: position,
+            team: team,
+            tier: parseInt(player.Tier)
+        });
+    });
 }
 
 function balanceTeams(teams) {
-    let redScore = teams.Red.reduce((sum, player) => sum + player.tier, 0);
-    let whiteScore = teams.White.reduce((sum, player) => sum + player.tier, 0);
+    const getTeamScore = (team) => 
+        [...team.Defense, ...team.Forward].reduce((sum, player) => sum + player.tier, 0);
+
+    let redScore = getTeamScore(teams.Red);
+    let whiteScore = getTeamScore(teams.White);
 
     while (Math.abs(redScore - whiteScore) > 1) {
         const sourceTeam = redScore > whiteScore ? "Red" : "White";
         const targetTeam = sourceTeam === "Red" ? "White" : "Red";
 
-        // Find the player with the lowest tier that can be moved
-        const playerToMove = teams[sourceTeam].reduce((min, p) => {
-            if (p.tier < min.tier && teams[targetTeam].filter(tp => tp.position === p.position).length < 6) {
-                return p;
-            }
-            return min;
-        }, teams[sourceTeam][0]);
+        // Find the position with more players in the source team
+        const position = teams[sourceTeam].Defense.length > teams[sourceTeam].Forward.length ? "Defense" : "Forward";
+
+        // Find the player with the lowest tier in that position
+        const playerToMove = teams[sourceTeam][position].reduce((min, p) => p.tier < min.tier ? p : min);
 
         // Move the player
-        teams[sourceTeam] = teams[sourceTeam].filter(p => p !== playerToMove);
-        teams[targetTeam].push({...playerToMove, team: targetTeam});
+        teams[sourceTeam][position] = teams[sourceTeam][position].filter(p => p !== playerToMove);
+        playerToMove.team = targetTeam;
+        teams[targetTeam][position].push(playerToMove);
 
         // Recalculate scores
-        redScore = teams.Red.reduce((sum, player) => sum + player.tier, 0);
-        whiteScore = teams.White.reduce((sum, player) => sum + player.tier, 0);
+        redScore = getTeamScore(teams.Red);
+        whiteScore = getTeamScore(teams.White);
     }
-}        
+}   
         function generateRoster() {
             console.log("Grid data before roster generation:", gridData);
             const rosters = generateRosters(gridData);
