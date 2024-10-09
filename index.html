@@ -43,8 +43,16 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const csvText = e.target.result;
+                    console.log('CSV Text:', csvText); // Debugging: See the raw CSV text.
+                    
                     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-                    createGrid(results.data);
+                    console.log('Parsed Results:', results.data); // Debugging: Check the parsed data.
+                    
+                    if (results.data && results.data.length > 0) {
+                        createGrid(results.data);
+                    } else {
+                        alert('No data found in the CSV. Please ensure the file has content.');
+                    }
                 };
                 reader.readAsText(file);
             }
@@ -67,8 +75,7 @@
 
         generateRostersButton.addEventListener('click', function() {
             const data = hot.getData();
-            // Implement the logic for generating rosters using the data array.
-            console.log('Generated Rosters:', data);
+            console.log('Generated Rosters Data:', data); // Debugging: Log the current data.
             alert('Rosters generated!');
             rostersButton.style.display = 'inline-block';
         });
