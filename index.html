@@ -108,10 +108,6 @@
 
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
-    if (attendingPlayers.length === 0) {
-        console.warn("No attending players found. Cannot generate rosters.");
-        return [];
-    }
 
     // Parse tiers and add position property
     attendingPlayers.forEach(player => {
@@ -258,7 +254,6 @@ function generateRosters(gridData) {
             const rosters = generateRosters(gridData);
             console.log("Generated rosters:", rosters);
             if (rosters.length === 0) {
-                alert("No rosters were generated. Check if any players are marked as attending.");
             } else {
                 localStorage.setItem('rosterData', JSON.stringify(rosters));
                 console.log("Roster data saved to localStorage:", localStorage.getItem('rosterData'));
