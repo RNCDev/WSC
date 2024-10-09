@@ -96,9 +96,65 @@
             renderGrid();
         }
         function goToRoster() {
-            localStorage.setItem('memberData', JSON.stringify(gridData));
+            const rosters = generateRosters(gridData);
+            localStorage.setItem('rosterData', JSON.stringify(rosters));
             window.location.href = 'roster.html';
         }
+
+        function generateRosters(gridData) {
+    // Filter out players who are not attending
+    const attendingPlayers = gridData.filter(player => player.Attendance === "1");
+
+    // Sort players by tier (descending) and then by position
+    const sortedPlayers = attendingPlayers.sort((a, b) => {
+        if (b.Tier !== a.Tier) return b.Tier - a.Tier;
+        return a.Defense === b.Defense ? 0 : a.Defense === "1" ? -1 : 1;
+    });
+
+    const teams = { Red: [], White: [] };
+    const positions = { Red: { Forward: 0, Defense: 0 }, White: { Forward: 0, Defense: 0 } };
+
+    sortedPlayers.forEach(player => {
+        const position = player.Defense === "1" ? "Defense" : "Forward";
+        const team = chooseTeam(teams, positions, position);
+        
+        teams[team].push({
+            name: player.Players,
+            position: position,
+            team: team
+        });
+
+        positions[team][position]++;
+    });
+
+    return [...teams.Red, ...teams.White];
+}
+
+function chooseTeam(teams, positions, position) {
+    const redScore = calculateTeamScore(teams.Red);
+    const whiteScore = calculateTeamScore(teams.White);
+
+    if (redScore !== whiteScore) {
+        return redScore < whiteScore ? "Red" : "White";
+    }
+
+    if (position === "Defense") {
+        return positions.Red.Defense <= positions.White.Defense ? "Red" : "White";
+    }
+
+    return positions.Red.Forward <= positions.White.Forward ? "Red" : "White";
+}
+
+function calculateTeamScore(team) {
+    return team.reduce((sum, player) => sum + parseInt(player.Tier), 0);
+}
+
+// Usage:
+const rosters = generateRosters(gridData);
+localStorage.setItem('rosterData', JSON.stringify(rosters));
+window.location.href = 'roster.html';
+
+        
         document.getElementById('addRow').addEventListener('click', addRow);
         document.getElementById('goToRoster').addEventListener('click', goToRoster);
         loadCSV();
