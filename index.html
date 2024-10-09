@@ -3,101 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Membership Editor</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@11.1.0/dist/handsontable.full.min.css">
+    <title>Interactive Membership Grid</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        #rostersButton {
-            display: none;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
         }
-        #gridContainer {
-            margin-top: 20px;
+        #grid {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        #grid th, #grid td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #grid th {
+            background-color: #f2f2f2;
+        }
+        #grid input {
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            background-color: transparent;
+        }
+        .button-container {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Membership Editor</h1>
-        <input type="file" id="csvFileInput" accept=".csv" />
-        <button id="generateRostersButton">Generate Rosters</button>
-        <button id="saveCsvButton">Save CSV</button>
-        <button id="rostersButton">Go to Rosters</button>
-    </header>
+    <div class="button-container">
+        <button id="generateRosters">Generate Rosters</button>
+        <button id="goToRosters" style="display: none;">Go to Rosters</button>
+        <button id="saveGrid">Save Grid</button>
+    </div>
+    <table id="grid"></table>
 
-    <div id="gridContainer"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@11.1.0/dist/handsontable.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
-        const csvInput = document.getElementById('csvFileInput');
-        const generateRostersButton = document.getElementById('generateRostersButton');
-        const saveCsvButton = document.getElementById('saveCsvButton');
-        const rostersButton = document.getElementById('rostersButton');
-        const gridContainer = document.getElementById('gridContainer');
-        let hot;
+        let gridData = [];
 
-        csvInput.addEventListener('change', handleFileSelect);
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const csvText = e.target.result;
-                    console.log('CSV Text:', csvText); // Debugging: See the raw CSV text.
-                    
-                    const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-                    console.log('Parsed Results:', results); // Debugging: Check the parsed results.
-                    
-                    const data = results.data.filter(row => Object.values(row).some(value => value)); // Filter out any completely empty rows.
-                    console.log('Filtered Data:', data); // Debugging: See the filtered data.
-
-                    if (data && data.length > 0) {
-                        createGrid(data);
-                    } else {
-                        alert('No valid data found in the CSV. Please ensure the file has content.');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function createGrid(data) {
-            if (hot) {
-                hot.destroy();
-            }
-
-            hot = new Handsontable(gridContainer, {
-                data: data,
-                colHeaders: Object.keys(data[0] || {}),
-                columns: Object.keys(data[0] || {}).map(() => ({ editor: 'text' })),
-                rowHeaders: true,
-                stretchH: 'all',
-                licenseKey: 'non-commercial-and-evaluation'
+        // Function to load and parse CSV
+        function loadCSV() {
+            Papa.parse('Membership.csv', {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    gridData = results.data;
+                    renderGrid();
+                }
             });
         }
 
-        generateRostersButton.addEventListener('click', function() {
-            const data = hot.getData();
-            console.log('Generated Rosters Data:', data); // Debugging: Log the current data.
+        // Function to render the grid
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+            Object.keys(gridData[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            grid.appendChild(headerRow);
+
+            // Create data rows
+            gridData.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                Object.keys(row).forEach(key => {
+                    const td = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.value = row[key];
+                    input.addEventListener('change', (e) => {
+                        gridData[rowIndex][key] = e.target.value;
+                    });
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                });
+                grid.appendChild(tr);
+            });
+        }
+
+        // Function to generate rosters (placeholder)
+        function generateRosters() {
             alert('Rosters generated!');
-            rostersButton.style.display = 'inline-block';
-        });
+            document.getElementById('goToRosters').style.display = 'inline-block';
+        }
 
-        saveCsvButton.addEventListener('click', function() {
-            const csvData = Papa.unparse(hot.getSourceData(), { header: true });
-            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        // Function to go to rosters (placeholder)
+        function goToRosters() {
+            alert('Navigating to rosters...');
+        }
+
+        // Function to save grid as CSV
+        function saveGrid() {
+            const csv = Papa.unparse(gridData);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'membership.csv';
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'Membership.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
 
-        rostersButton.addEventListener('click', function() {
-            alert('Navigating to Rosters!');
-        });
+        // Event listeners
+        document.getElementById('generateRosters').addEventListener('click', generateRosters);
+        document.getElementById('goToRosters').addEventListener('click', goToRosters);
+        document.getElementById('saveGrid').addEventListener('click', saveGrid);
+
+        // Load CSV on page load
+        loadCSV();
     </script>
 </body>
 </html>
