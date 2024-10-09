@@ -108,6 +108,10 @@
 
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
+    if (attendingPlayers.length === 0) {
+        console.warn("No attending players found. Cannot generate rosters.");
+        return [];
+    }
 
     // Parse tiers and add position property
     attendingPlayers.forEach(player => {
@@ -115,7 +119,7 @@ function generateRosters(gridData) {
         player.position = player.Defense === "1" ? "Defense" : "Forward";
     });
 
-    // Separate players by position
+    // Group players by position
     const defensePlayers = attendingPlayers.filter(player => player.position === "Defense");
     const forwardPlayers = attendingPlayers.filter(player => player.position === "Forward");
 
@@ -143,23 +147,57 @@ function generateRosters(gridData) {
 
     // Helper function to assign players by position
     function assignPlayersByPosition(players) {
-        // Sort players by tier descending
-        players.sort((a, b) => b.Tier - a.Tier);
+        // Group players by tier
+        const tierGroups = groupBy(players, 'Tier');
 
-        players.forEach(player => {
-            // Choose the team with the lower total tier score for this position
-            const teamName = teamPositions.Red[player.position] <= teamPositions.White[player.position] ? 'Red' : 'White';
+        // Get unique tiers sorted in descending order
+        const uniqueTiers = Object.keys(tierGroups).map(parseFloat).sort((a, b) => b - a);
 
-            teams[teamName].push({
-                name: player.Players,
-                position: player.position,
-                team: teamName,
-                tier: player.Tier
+        uniqueTiers.forEach(tier => {
+            const playersInTier = tierGroups[tier];
+
+            // Shuffle players within the tier
+            shuffleArray(playersInTier);
+
+            playersInTier.forEach(player => {
+                // Choose the team with the lower total tier score for this position
+                let teamName;
+                if (teamPositions.Red[player.position] < teamPositions.White[player.position]) {
+                    teamName = 'Red';
+                } else if (teamPositions.Red[player.position] > teamPositions.White[player.position]) {
+                    teamName = 'White';
+                } else {
+                    // If counts are equal, randomly choose a team
+                    teamName = Math.random() < 0.5 ? 'Red' : 'White';
+                }
+
+                teams[teamName].push({
+                    name: player.Players,
+                    position: player.position,
+                    team: teamName,
+                    tier: player.Tier
+                });
+
+                teamScores[teamName] += player.Tier;
+                teamPositions[teamName][player.position]++;
             });
-
-            teamScores[teamName] += player.Tier;
-            teamPositions[teamName][player.position]++;
         });
+    }
+
+    // Helper function to group players by a key
+    function groupBy(array, key) {
+        return array.reduce((result, currentItem) => {
+            (result[currentItem[key]] = result[currentItem[key]] || []).push(currentItem);
+            return result;
+        }, {});
+    }
+
+    // Helper function to shuffle an array in place
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
     }
 
     // Helper function to balance positions between teams
@@ -172,11 +210,12 @@ function generateRosters(gridData) {
                 const sourceTeam = redCount > whiteCount ? 'Red' : 'White';
                 const targetTeam = sourceTeam === 'Red' ? 'White' : 'Red';
 
-                // Find the lowest-tier player in the source team for this position
+                // Find a random player to move
                 const sourcePlayers = teams[sourceTeam].filter(p => p.position === position);
                 if (sourcePlayers.length === 0) break;
 
-                const playerToMove = sourcePlayers.reduce((minPlayer, p) => (p.tier < minPlayer.tier ? p : minPlayer));
+                // Choose a random player to move
+                const playerToMove = sourcePlayers[Math.floor(Math.random() * sourcePlayers.length)];
 
                 // Move the player
                 teams[sourceTeam] = teams[sourceTeam].filter(p => p !== playerToMove);
@@ -212,6 +251,10 @@ function generateRosters(gridData) {
             const sourcePlayers = teams[sourceTeam];
             const targetPlayers = teams[targetTeam];
 
+            // Shuffle source and target players to introduce randomness
+            shuffleArray(sourcePlayers);
+            shuffleArray(targetPlayers);
+
             outerLoop:
             for (let i = 0; i < sourcePlayers.length; i++) {
                 for (let j = 0; j < targetPlayers.length; j++) {
@@ -228,8 +271,8 @@ function generateRosters(gridData) {
 
                     if (newDifference < Math.abs(redScore - whiteScore)) {
                         // Perform swap
-                        teams[sourceTeam][i] = targetPlayer;
-                        teams[targetTeam][j] = sourcePlayer;
+                        teams[sourceTeam][teams[sourceTeam].indexOf(sourcePlayer)] = targetPlayer;
+                        teams[targetTeam][teams[targetTeam].indexOf(targetPlayer)] = sourcePlayer;
 
                         sourcePlayer.team = targetTeam;
                         targetPlayer.team = sourceTeam;
@@ -248,6 +291,7 @@ function generateRosters(gridData) {
         }
     }
 }
+
 
         function generateRoster() {
             console.log("Grid data before roster generation:", gridData);
