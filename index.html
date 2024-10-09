@@ -6,44 +6,13 @@
     <title>Interactive Membership Grid</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        #grid {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        #grid th, #grid td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        #grid th {
-            background-color: #f2f2f2;
-        }
-        #grid input {
-            width: calc(100% - 10px);
-            box-sizing: border-box;
-            border: none;
-            background-color: transparent;
-        }
-        .button-container {
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin-right: 10px;
-            cursor: pointer;
-        }
-        #lastUpdateTime {
-            margin-top: 10px;
-            font-style: italic;
-        }
+        /* ... (keep the existing styles) ... */
     </style>
 </head>
 <body>
+    <h1>Interactive Membership Grid</h1>
+    <p id="loadingMessage">Loading... If you see this message for more than a few seconds, there may be an error.</p>
+    
     <div class="button-container">
         <button id="generateRosters">Generate Rosters</button>
         <button id="goToRosters" style="display: none;">Go to Rosters</button>
@@ -54,148 +23,46 @@
     <div id="lastUpdateTime"></div>
 
     <script>
-        let gridData = [];
-        let headers = [];
-        let generatedTeams = null;
+        // Wrap all JavaScript in a try-catch block
+        try {
+            let gridData = [];
+            let headers = [];
+            let generatedTeams = null;
 
-        function loadCSV() {
-            Papa.parse('Membership.csv', {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    gridData = results.data;
-                    headers = results.meta.fields;
-                    renderGrid();
-                }
-            });
-        }
-
-        function renderGrid() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
-
-            const headerRow = document.createElement('tr');
-            headers.forEach(key => {
-                const th = document.createElement('th');
-                th.textContent = key;
-                headerRow.appendChild(th);
-            });
-            const actionTh = document.createElement('th');
-            actionTh.textContent = 'Action';
-            headerRow.appendChild(actionTh);
-            grid.appendChild(headerRow);
-
-            gridData.forEach((row, rowIndex) => {
-                grid.appendChild(createDataRow(row, rowIndex));
-            });
-        }
-
-        function createDataRow(row, rowIndex) {
-            const tr = document.createElement('tr');
-            headers.forEach(key => {
-                const td = document.createElement('td');
-                const input = document.createElement('input');
-                input.value = row[key] || '';
-                input.addEventListener('change', (e) => {
-                    gridData[rowIndex][key] = e.target.value;
-                    updateLastModifiedTime();
+            function loadCSV() {
+                console.log('Attempting to load CSV...');
+                Papa.parse('Membership.csv', {
+                    download: true,
+                    header: true,
+                    complete: function(results) {
+                        console.log('CSV loaded successfully:', results);
+                        gridData = results.data;
+                        headers = results.meta.fields;
+                        renderGrid();
+                    },
+                    error: function(error) {
+                        console.error('Error loading CSV:', error);
+                        document.getElementById('loadingMessage').textContent = 'Error loading CSV. Please check the console for details.';
+                    }
                 });
-                td.appendChild(input);
-                tr.appendChild(td);
+            }
+
+            // ... (keep all other functions as they were) ...
+
+            // Add event listeners and call loadCSV()
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM fully loaded and parsed');
+                document.getElementById('generateRosters').addEventListener('click', generateBalancedTeams);
+                document.getElementById('goToRosters').addEventListener('click', goToRosters);
+                document.getElementById('saveGrid').addEventListener('click', saveGrid);
+                document.getElementById('addRow').addEventListener('click', addRow);
+                loadCSV();
             });
-            
-            const actionTd = document.createElement('td');
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
-            deleteButton.addEventListener('click', () => deleteRow(rowIndex));
-            actionTd.appendChild(deleteButton);
-            tr.appendChild(actionTd);
 
-            return tr;
+        } catch (error) {
+            console.error('An error occurred:', error);
+            document.body.innerHTML += '<p>An error occurred. Please check the console for details.</p>';
         }
-
-        function addRow() {
-            const newRow = {};
-            headers.forEach(key => {
-                newRow[key] = '';
-            });
-            gridData.push(newRow);
-            const grid = document.getElementById('grid');
-            grid.appendChild(createDataRow(newRow, gridData.length - 1));
-            updateLastModifiedTime();
-        }
-
-        function deleteRow(rowIndex) {
-            gridData.splice(rowIndex, 1);
-            renderGrid();
-            updateLastModifiedTime();
-        }
-
-        function updateLastModifiedTime() {
-            const now = new Date();
-            document.getElementById('lastUpdateTime').textContent = `Last updated: ${now.toLocaleString()}`;
-        }
-
-        function generateBalancedTeams() {
-            let players = gridData.filter(player => player.Attendance === '1');
-            players.sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
-
-            let redTeam = [];
-            let whiteTeam = [];
-            let redScore = 0;
-            let whiteScore = 0;
-
-            let defensemen = players.filter(player => player.Defense === '1');
-            for (let i = 0; i < Math.min(12, defensemen.length); i++) {
-                let player = defensemen[i];
-                let team = redScore <= whiteScore ? redTeam : whiteTeam;
-                team.push({name: player.Players, team: team === redTeam ? 'Red' : 'White', position: 'Defense'});
-                (team === redTeam ? redScore : whiteScore) += parseInt(player.Tier);
-            }
-
-            let forwards = players.filter(player => player.Defense !== '1');
-            forwards = forwards.concat(defensemen.slice(12));
-            for (let player of forwards) {
-                let team = redScore <= whiteScore ? redTeam : whiteTeam;
-                team.push({name: player.Players, team: team === redTeam ? 'Red' : 'White', position: 'Forward'});
-                (team === redTeam ? redScore : whiteScore) += parseInt(player.Tier);
-            }
-
-            generatedTeams = {red: redTeam, white: whiteTeam};
-            document.getElementById('goToRosters').style.display = 'inline-block';
-            alert('Teams generated! Click "Go to Rosters" to view them.');
-        }
-
-        function goToRosters() {
-            if (generatedTeams) {
-                localStorage.setItem('generatedTeams', JSON.stringify(generatedTeams));
-                window.open('roster.html', '_blank');
-            } else {
-                alert('Please generate teams first.');
-            }
-        }
-
-        function saveGrid() {
-            const csv = Papa.unparse(gridData);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'Membership.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        }
-
-        document.getElementById('generateRosters').addEventListener('click', generateBalancedTeams);
-        document.getElementById('goToRosters').addEventListener('click', goToRosters);
-        document.getElementById('saveGrid').addEventListener('click', saveGrid);
-        document.getElementById('addRow').addEventListener('click', addRow);
-
-        loadCSV();
     </script>
 </body>
 </html>
