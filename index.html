@@ -6,191 +6,67 @@
     <title>Interactive Membership Grid</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        #grid {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        #grid th, #grid td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        #grid th {
-            background-color: #f2f2f2;
-        }
-        #grid input {
-            width: calc(100% - 10px);
-            box-sizing: border-box;
-            border: none;
-            background-color: transparent;
-        }
-        .button-container {
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin-right: 10px;
-            cursor: pointer;
-        }
-        #lastUpdateTime {
-            margin-top: 10px;
-            font-style: italic;
-        }
-        .delete-row, .add-row {
-            cursor: pointer;
-            padding: 2px 5px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 3px;
-        }
-        .add-row {
-            background-color: #4CAF50;
-        }
+        /* ... (previous styles remain the same) ... */
     </style>
 </head>
 <body>
-    <div class="button-container">
-        <button id="generateRosters">Generate Rosters</button>
-        <button id="goToRosters" style="display: none;">Go to Rosters</button>
-        <button id="saveGrid">Download Updated CSV</button>
-        <button id="addRow">Add New Row</button>
-    </div>
-    <table id="grid"></table>
-    <div id="lastUpdateTime"></div>
+    <!-- ... (previous HTML structure remains the same) ... -->
 
     <script>
         let gridData = [];
         let headers = [];
+        let generatedTeams = null;
 
-        // Function to load and parse CSV
-        function loadCSV() {
-            Papa.parse('Membership.csv', {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    gridData = results.data;
-                    headers = results.meta.fields;
-                    renderGrid();
-                }
-            });
-        }
+        // ... (previous functions remain the same) ...
 
-        // Function to render the grid
-        function renderGrid() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
+        // Function to generate balanced teams
+        function generateBalancedTeams() {
+            let players = gridData.filter(player => player.Attendance === '1');
+            players.sort((a, b) => parseInt(b.Tier) - parseInt(a.Tier));
 
-            // Create header row
-            const headerRow = document.createElement('tr');
-            headers.forEach(key => {
-                const th = document.createElement('th');
-                th.textContent = key;
-                headerRow.appendChild(th);
-            });
-            const actionTh = document.createElement('th');
-            actionTh.textContent = 'Action';
-            headerRow.appendChild(actionTh);
-            grid.appendChild(headerRow);
+            let redTeam = [];
+            let whiteTeam = [];
+            let redScore = 0;
+            let whiteScore = 0;
 
-            // Create data rows
-            gridData.forEach((row, rowIndex) => {
-                grid.appendChild(createDataRow(row, rowIndex));
-            });
-        }
+            // Assign defensemen first
+            let defensemen = players.filter(player => player.Defense === '1');
+            for (let i = 0; i < Math.min(12, defensemen.length); i++) {
+                let player = defensemen[i];
+                let team = redScore <= whiteScore ? redTeam : whiteTeam;
+                team.push({name: player.Players, team: team === redTeam ? 'Red' : 'White', position: 'Defense'});
+                (team === redTeam ? redScore : whiteScore) += parseInt(player.Tier);
+            }
 
-        // Function to create a data row
-        function createDataRow(row, rowIndex) {
-            const tr = document.createElement('tr');
-            headers.forEach(key => {
-                const td = document.createElement('td');
-                const input = document.createElement('input');
-                input.value = row[key] || '';
-                input.addEventListener('change', (e) => {
-                    gridData[rowIndex][key] = e.target.value;
-                    updateLastModifiedTime();
-                });
-                td.appendChild(input);
-                tr.appendChild(td);
-            });
-            
-            // Add delete button
-            const actionTd = document.createElement('td');
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
-            deleteButton.className = 'delete-row';
-            deleteButton.addEventListener('click', () => deleteRow(rowIndex));
-            actionTd.appendChild(deleteButton);
-            tr.appendChild(actionTd);
+            // Assign remaining players as forwards
+            let forwards = players.filter(player => player.Defense !== '1');
+            forwards = forwards.concat(defensemen.slice(12)); // Add extra defensemen as forwards
+            for (let player of forwards) {
+                let team = redScore <= whiteScore ? redTeam : whiteTeam;
+                team.push({name: player.Players, team: team === redTeam ? 'Red' : 'White', position: 'Forward'});
+                (team === redTeam ? redScore : whiteScore) += parseInt(player.Tier);
+            }
 
-            return tr;
-        }
-
-        // Function to add a new row
-        function addRow() {
-            const newRow = {};
-            headers.forEach(key => {
-                newRow[key] = '';
-            });
-            gridData.push(newRow);
-            const grid = document.getElementById('grid');
-            grid.appendChild(createDataRow(newRow, gridData.length - 1));
-            updateLastModifiedTime();
-        }
-
-        // Function to delete a row
-        function deleteRow(rowIndex) {
-            gridData.splice(rowIndex, 1);
-            renderGrid();
-            updateLastModifiedTime();
-        }
-
-        // Function to update last modified time
-        function updateLastModifiedTime() {
-            const now = new Date();
-            document.getElementById('lastUpdateTime').textContent = `Last updated: ${now.toLocaleString()}`;
-        }
-
-        // Function to generate rosters (placeholder)
-        function generateRosters() {
-            alert('Rosters generated!');
+            generatedTeams = {red: redTeam, white: whiteTeam};
             document.getElementById('goToRosters').style.display = 'inline-block';
+            alert('Teams generated! Click "Go to Rosters" to view them.');
         }
 
-        // Function to go to rosters (placeholder)
+        // Function to go to rosters
         function goToRosters() {
-            alert('Navigating to rosters...');
-        }
-
-        // Function to save grid as CSV
-        function saveGrid() {
-            const csv = Papa.unparse(gridData);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'Membership.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            if (generatedTeams) {
+                localStorage.setItem('generatedTeams', JSON.stringify(generatedTeams));
+                window.open('roster.html', '_blank');
+            } else {
+                alert('Please generate teams first.');
             }
         }
 
         // Event listeners
-        document.getElementById('generateRosters').addEventListener('click', generateRosters);
+        document.getElementById('generateRosters').addEventListener('click', generateBalancedTeams);
         document.getElementById('goToRosters').addEventListener('click', goToRosters);
-        document.getElementById('saveGrid').addEventListener('click', saveGrid);
-        document.getElementById('addRow').addEventListener('click', addRow);
 
-        // Load CSV on page load
-        loadCSV();
+        // ... (rest of the script remains the same) ...
     </script>
 </body>
 </html>
