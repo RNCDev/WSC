@@ -200,6 +200,54 @@ function balanceTeams(teams) {
                 window.location.href = 'roster.html';
             }
         }
+
+
+function testRosterGeneration(iterations = 100) {
+    let totalStats = {
+        Red: { Defense: { count: 0, skill: 0 }, Forward: { count: 0, skill: 0 } },
+        White: { Defense: { count: 0, skill: 0 }, Forward: { count: 0, skill: 0 } }
+    };
+
+    for (let i = 0; i < iterations; i++) {
+        const roster = generateRosters(gridData);
+        
+        roster.forEach(player => {
+            totalStats[player.team][player.position].count++;
+            totalStats[player.team][player.position].skill += player.tier;
+        });
+    }
+
+    // Calculate averages
+    for (let team in totalStats) {
+        for (let position in totalStats[team]) {
+            totalStats[team][position].avgCount = totalStats[team][position].count / iterations;
+            totalStats[team][position].avgSkill = totalStats[team][position].skill / totalStats[team][position].count;
+        }
+    }
+
+    console.log("Average stats over", iterations, "iterations:", totalStats);
+
+    // Calculate differences
+    const redDefCount = totalStats.Red.Defense.avgCount;
+    const whiteDefCount = totalStats.White.Defense.avgCount;
+    const redFwdCount = totalStats.Red.Forward.avgCount;
+    const whiteFwdCount = totalStats.White.Forward.avgCount;
+
+    const redDefSkill = totalStats.Red.Defense.avgSkill;
+    const whiteDefSkill = totalStats.White.Defense.avgSkill;
+    const redFwdSkill = totalStats.Red.Forward.avgSkill;
+    const whiteFwdSkill = totalStats.White.Forward.avgSkill;
+
+    console.log("Differences:");
+    console.log("Defensemen count difference:", Math.abs(redDefCount - whiteDefCount));
+    console.log("Forwards count difference:", Math.abs(redFwdCount - whiteFwdCount));
+    console.log("Defensemen skill difference:", Math.abs(redDefSkill - whiteDefSkill));
+    console.log("Forwards skill difference:", Math.abs(redFwdSkill - whiteFwdSkill));
+}
+
+// Run the test
+testRosterGeneration(100);
+
         
         document.getElementById('addRow').addEventListener('click', addRow);
         document.getElementById('generateRoster').addEventListener('click', generateRoster);
