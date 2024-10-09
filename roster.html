@@ -87,7 +87,7 @@
     <button id="returnToGrid" class="return-button">Return to Grid</button>
     
     <div class="container">
-        <div id="redTeam" class="team red-team">
+       <div id="redTeam" class="team red-team">
             <h2>Red Team</h2>
             <div class="position-group">
                 <h3>Forwards</h3>
@@ -118,13 +118,18 @@
             document.getElementById('redDefense').innerHTML = '';
             document.getElementById('whiteForwards').innerHTML = '';
             document.getElementById('whiteDefense').innerHTML = '';
-
+        
             teamData.forEach(player => {
                 const li = document.createElement('li');
                 li.textContent = player.name;
                 
                 const listId = `${player.team.toLowerCase()}${player.position}s`;
-                document.getElementById(listId).appendChild(li);
+                const list = document.getElementById(listId);
+                if (list) {
+                    list.appendChild(li);
+                } else {
+                    console.error(`List not found for player: ${player.name}, team: ${player.team}, position: ${player.position}`);
+                }
             });
         }
 
@@ -135,7 +140,14 @@
             
             if (rosterDataString) {
                 try {
-                    const rosterData = JSON.parse(rosterDataString);
+                    // Check if the data is already an object
+                    let rosterData = JSON.parse(rosterDataString);
+                    
+                    // If it's a string (already stringified), parse it again
+                    if (typeof rosterData === 'string') {
+                        rosterData = JSON.parse(rosterData);
+                    }
+                    
                     console.log("Parsed roster data:", rosterData);
                     if (rosterData.length === 0) {
                         console.warn("Roster data is empty. No teams to display.");
