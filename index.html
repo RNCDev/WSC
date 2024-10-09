@@ -112,8 +112,8 @@
             console.log("Attending players:", attendingPlayers);
         
             if (attendingPlayers.length === 0) {
-                console.warn("No attending players found. Including all players.");
-                attendingPlayers = gridData;
+                console.warn("No attending players found. Cannot generate rosters.");
+                return [];
             }
         
             // Sort players by tier (descending) and then by position
@@ -124,13 +124,27 @@
         
             const teams = { Red: [], White: [] };
             
-            sortedPlayers.forEach((player, index) => {
-                const position = player.Defense === "1" ? "Defense" : "Forward";
-                const team = index % 2 === 0 ? "Red" : "White"; // Alternate between Red and White
-                
+            // Separate defensemen and forwards
+            const defensemen = sortedPlayers.filter(player => player.Defense === "1");
+            const forwards = sortedPlayers.filter(player => player.Defense === "0");
+        
+            // Distribute defensemen
+            defensemen.forEach((player, index) => {
+                const team = index % 2 === 0 ? "Red" : "White";
                 teams[team].push({
                     name: player.Players,
-                    position: position,
+                    position: "Defense",
+                    team: team,
+                    tier: parseInt(player.Tier)
+                });
+            });
+        
+            // Distribute forwards
+            forwards.forEach((player, index) => {
+                const team = index % 2 === 0 ? "Red" : "White";
+                teams[team].push({
+                    name: player.Players,
+                    position: "Forward",
                     team: team,
                     tier: parseInt(player.Tier)
                 });
@@ -168,7 +182,7 @@
             const rosters = generateRosters(gridData);
             console.log("Generated rosters:", rosters);
             if (rosters.length === 0) {
-                console.error("No rosters were generated. Check if any players are in the grid data.");
+                alert("No rosters were generated. Check if any players are marked as attending.");
             } else {
                 localStorage.setItem('rosterData', JSON.stringify(rosters));
                 console.log("Roster data saved to localStorage:", localStorage.getItem('rosterData'));
