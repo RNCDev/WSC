@@ -17,7 +17,9 @@
 <body>
     <header>
         <h1>Membership Editor</h1>
+        <input type="file" id="csvFileInput" accept=".csv" />
         <button id="generateRostersButton">Generate Rosters</button>
+        <button id="saveCsvButton">Save CSV</button>
         <button id="rostersButton">Go to Rosters</button>
     </header>
 
@@ -26,22 +28,27 @@
     <script src="https://cdn.jsdelivr.net/npm/handsontable@11.1.0/dist/handsontable.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
+        const csvInput = document.getElementById('csvFileInput');
         const generateRostersButton = document.getElementById('generateRostersButton');
+        const saveCsvButton = document.getElementById('saveCsvButton');
         const rostersButton = document.getElementById('rostersButton');
         const gridContainer = document.getElementById('gridContainer');
         let hot;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetch('membership.csv')
-                .then(response => response.text())
-                .then(csvText => {
+        csvInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const csvText = e.target.result;
                     const results = Papa.parse(csvText, { header: true });
                     createGrid(results.data);
-                })
-                .catch(error => {
-                    console.error('Error loading CSV:', error);
-                });
-        });
+                };
+                reader.readAsText(file);
+            }
+        }
 
         function createGrid(data) {
             if (hot) {
@@ -54,36 +61,28 @@
                 columns: Object.keys(data[0]).map(() => ({ editor: 'text' })),
                 rowHeaders: true,
                 stretchH: 'all',
-                licenseKey: 'non-commercial-and-evaluation',
-                afterChange: function(changes, source) {
-                    if (source === 'edit') {
-                        saveCSV();
-                    }
-                }
-            });
-        }
-
-        function saveCSV() {
-            const csvData = Papa.unparse(hot.getData(), { header: true });
-            fetch('save_csv', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ csv: csvData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('CSV saved successfully', data);
-            })
-            .catch(error => {
-                console.error('Error saving CSV:', error);
+                licenseKey: 'non-commercial-and-evaluation'
             });
         }
 
         generateRostersButton.addEventListener('click', function() {
+            const data = hot.getData();
+            // Implement the logic for generating rosters using the data array.
+            console.log('Generated Rosters:', data);
             alert('Rosters generated!');
             rostersButton.style.display = 'inline-block';
+        });
+
+        saveCsvButton.addEventListener('click', function() {
+            const csvData = Papa.unparse(hot.getSourceData(), { header: true });
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'membership.csv';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
 
         rostersButton.addEventListener('click', function() {
