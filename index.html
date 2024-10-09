@@ -39,20 +39,22 @@
     <script>
         let gridData = [];
         let headers = [];
-        function loadCSV() {
-            Papa.parse('Membership.csv', {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    gridData = results.data;
-                    headers = results.meta.fields;
-                    renderGrid();
-                },
-                error: function(error) {
-                    console.error('Error loading CSV:', error);
-                }
-            });
+        
+function loadCSV() {
+    Papa.parse('Membership.csv', {
+        download: true,
+        header: true,
+        complete: function(results) {
+            gridData = results.data;
+            headers = results.meta.fields;
+            console.log("CSV data loaded:", gridData);
+            renderGrid();
+        },
+        error: function(error) {
+            console.error('Error loading CSV:', error);
         }
+    });
+}
         function renderGrid() {
             const grid = document.getElementById('memberGrid');
             grid.innerHTML = '';
@@ -102,35 +104,26 @@
         }
 
 function generateRosters(gridData) {
-
-    const rosters = generateRosters(gridData);
-    console.log("Generated rosters:", rosters);
-    localStorage.setItem('rosterData', JSON.stringify(rosters));
-    console.log("Roster data saved to localStorage");
-    
     // Filter out players who are not attending
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
 
     // Sort players by tier (descending) and then by position
     const sortedPlayers = attendingPlayers.sort((a, b) => {
-        if (b.Tier !== a.Tier) return parseInt(b.Tier) - parseInt(a.Tier);
+        if (parseInt(b.Tier) !== parseInt(a.Tier)) return parseInt(b.Tier) - parseInt(a.Tier);
         return a.Defense === b.Defense ? 0 : a.Defense === "1" ? -1 : 1;
     });
 
     const teams = { Red: [], White: [] };
-    const positions = { Red: { Forward: 0, Defense: 0 }, White: { Forward: 0, Defense: 0 } };
-
-    sortedPlayers.forEach(player => {
+    
+    sortedPlayers.forEach((player, index) => {
         const position = player.Defense === "1" ? "Defense" : "Forward";
-        const team = chooseTeam(teams, positions, position);
+        const team = index % 2 === 0 ? "Red" : "White"; // Alternate between Red and White
         
         teams[team].push({
             name: player.Players,
             position: position,
             team: team
         });
-
-        positions[team][position]++;
     });
 
     return [...teams.Red, ...teams.White];
@@ -158,13 +151,13 @@ function calculateTeamScore(team) {
 }
 
 function generateRoster() {
-        // This function will be implemented later
-            console.log("Generating roster...");
+    console.log("Grid data before roster generation:", gridData);
     const rosters = generateRosters(gridData);
+    console.log("Generated rosters:", rosters);
     localStorage.setItem('rosterData', JSON.stringify(rosters));
+    console.log("Roster data saved to localStorage");
     window.location.href = 'roster.html';
-}
-        
+}   
         document.getElementById('addRow').addEventListener('click', addRow);
         document.getElementById('generateRoster').addEventListener('click', generateRoster);
         document.getElementById('goToRoster').addEventListener('click', goToRoster);
