@@ -5,72 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Rosters</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: space-around;
-        }
-        .team {
-            width: 45%;
-        }
-        h2 {
-            color: #333;
-        }
-        h3 {
-            color: #666;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin-bottom: 5px;
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; display: flex; }
+        .team { width: 50%; padding: 10px; }
+        h2 { color: #333; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin-bottom: 5px; }
     </style>
 </head>
 <body>
-    <div class="team" id="redTeam">
+    <div class="team">
         <h2>Red Team</h2>
-        <h3>Forwards</h3>
-        <ul id="redForwards"></ul>
-        <h3>Defensemen</h3>
-        <ul id="redDefense"></ul>
+        <ul id="redTeam"></ul>
     </div>
-    <div class="team" id="whiteTeam">
+    <div class="team">
         <h2>White Team</h2>
-        <h3>Forwards</h3>
-        <ul id="whiteForwards"></ul>
-        <h3>Defensemen</h3>
-        <ul id="whiteDefense"></ul>
+        <ul id="whiteTeam"></ul>
     </div>
 
     <script>
-        function displayTeams() {
-            const teams = JSON.parse(localStorage.getItem('generatedTeams'));
-            if (!teams) {
-                document.body.innerHTML = '<h1>No teams generated yet. Please go back and generate teams first.</h1>';
-                return;
+        function displayRosters() {
+            const memberData = JSON.parse(localStorage.getItem('memberData'));
+            const midpoint = Math.ceil(memberData.length / 2);
+            
+            const redTeam = memberData.slice(0, midpoint);
+            const whiteTeam = memberData.slice(midpoint);
+
+            function populateTeamList(teamData, elementId) {
+                const list = document.getElementById(elementId);
+                teamData.forEach(player => {
+                    const li = document.createElement('li');
+                    li.textContent = player.Players; // Assuming 'Players' is the column name for player names
+                    list.appendChild(li);
+                });
             }
 
-            function populateTeamList(teamColor, position) {
-                const list = document.getElementById(`${teamColor}${position}`);
-                teams[teamColor].filter(player => player.position === position)
-                    .forEach(player => {
-                        const li = document.createElement('li');
-                        li.textContent = player.name;
-                        list.appendChild(li);
-                    });
-            }
-
-            populateTeamList('red', 'Forward');
-            populateTeamList('red', 'Defense');
-            populateTeamList('white', 'Forward');
-            populateTeamList('white', 'Defense');
+            populateTeamList(redTeam, 'redTeam');
+            populateTeamList(whiteTeam, 'whiteTeam');
         }
 
-        displayTeams();
+        displayRosters();
     </script>
 </body>
 </html>
