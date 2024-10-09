@@ -129,25 +129,26 @@
         }
 
         // Function to load team data (replace this with actual data loading in the future)
-function loadTeamData() {
-    const rosterDataString = localStorage.getItem('rosterData');
-    console.log("Retrieved roster data string:", rosterDataString);
-    
-    if (rosterDataString) {
-        try {
-            const rosterData = JSON.parse(rosterDataString);
-            console.log("Parsed roster data:", rosterData);
-            if (rosterData.length === 0) {
-                console.warn("Roster data is empty. No teams to display.");
+        function loadTeamData() {
+            const rosterDataString = localStorage.getItem('rosterData');
+            console.log("Retrieved roster data string:", rosterDataString);
+            
+            if (rosterDataString) {
+                try {
+                    const rosterData = JSON.parse(rosterDataString);
+                    console.log("Parsed roster data:", rosterData);
+                    if (rosterData.length === 0) {
+                        console.warn("Roster data is empty. No teams to display.");
+                    } else {
+                        displayRosters(rosterData);
+                    }
+                } catch (error) {
+                    console.error("Error parsing roster data:", error);
+                }
+            } else {
+                console.log("No roster data found in localStorage");
             }
-            displayRosters(rosterData);
-        } catch (error) {
-            console.error("Error parsing roster data:", error);
         }
-    } else {
-        console.log("No roster data found in localStorage");
-    }
-}
 
         document.addEventListener('DOMContentLoaded', loadTeamData);
         
