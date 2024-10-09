@@ -33,6 +33,7 @@
 <body>
     <h1>WSC Roster Builder</h1>
     <button id="addRow">Add Row</button>
+    <button id="generateRoster">Generate Roster</button>
     <button id="goToRoster">Go to Roster</button>
     <table id="memberGrid"></table>
     <script>
@@ -101,7 +102,17 @@
             window.location.href = 'roster.html';
         }
 
+        function generateRoster() {
+            // This function will be implemented later
+            console.log("Generating roster...");
+            // For now, we'll just save the current gridData to localStorage
+            localStorage.setItem('gridData', JSON.stringify(gridData));
+            // Navigate to roster.html
+            window.location.href = 'roster.html';
+        }
+
         document.getElementById('addRow').addEventListener('click', addRow);
+        document.getElementById('generateRoster').addEventListener('click', generateRoster);
         document.getElementById('goToRoster').addEventListener('click', goToRoster);
         loadCSV();
     </script>
