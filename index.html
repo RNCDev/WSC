@@ -15,6 +15,7 @@
         .action-column { width: 80px; }
         #fileInput { display: none; }
         .instructions { background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        th, .header-action {background-color: #f2f2f2; /* Same as other headers */}
     </style>
 </head>
 <body>
@@ -61,7 +62,11 @@
                 th.textContent = header;
                 headerRow.appendChild(th);
             });
-            headerRow.insertCell().textContent = 'Action';
+            const actionTh = document.createElement('th');
+            actionTh.textContent = 'Action';
+            actionTh.className = 'header-action'; // Add a class for consistent styling
+            headerRow.appendChild(actionTh);
+            
             gridData.forEach((row, index) => {
                 const tr = grid.insertRow();
                 headers.forEach(header => {
