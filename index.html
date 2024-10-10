@@ -34,6 +34,7 @@
     <button id="addRow">Add Row</button>
     <button id="generateRoster">Generate Roster</button>
     <button id="goToRoster">Go to Roster</button>
+    <button id="clearGrid">Clear</button> <!-- Added the Clear button -->
     <table id="memberGrid"></table>
     <script>
         let gridData = [], headers = [];
@@ -109,11 +110,19 @@
                 renderGrid();
             }
         }
+
+        function clearGrid() {
+            gridData = [];
+            headers = [];
+            localStorage.removeItem('gridData');
+            localStorage.removeItem('headers');
+            renderGrid();
+        }
         
         function goToRoster() {
             window.location.href = 'roster.html';
         }
-
+        
         function generateRosters(gridData) {
             const attendingPlayers = gridData.filter(player => player.Attendance === "1");
             if (attendingPlayers.length === 0) {
@@ -315,6 +324,7 @@
         document.getElementById('addRow').onclick = addRow;
         document.getElementById('generateRoster').onclick = generateRoster;
         document.getElementById('goToRoster').onclick = goToRoster;
+        document.getElementById('clearGrid').onclick = clearGrid; // Link the Clear function
 
         window.onload = loadGridData;
     </script>
