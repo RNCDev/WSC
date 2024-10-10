@@ -50,6 +50,7 @@
                         gridData = results.data;
                         headers = results.meta.fields;
                         console.log("CSV data loaded:", gridData);
+                        saveGridData();
                         renderGrid();
                     },
                     header: true,
@@ -79,6 +80,7 @@
                     input.value = row[header] || '';
                     input.addEventListener('change', (e) => {
                         gridData[index][header] = e.target.value;
+                        saveGridData();
                     });
                     td.appendChild(input);
                 });
@@ -96,12 +98,29 @@
             const newRow = {};
             headers.forEach(header => newRow[header] = '');
             gridData.push(newRow);
+            saveGridData();
             renderGrid();
         }
         
         function deleteRow(index) {
             gridData.splice(index, 1);
+            saveGridData();
             renderGrid();
+        }
+
+        function saveGridData() {
+        localStorage.setItem('gridData', JSON.stringify(gridData));
+        localStorage.setItem('headers', JSON.stringify(headers));
+        }
+
+        function loadGridData() {
+            const savedGridData = localStorage.getItem('gridData');
+            const savedHeaders = localStorage.getItem('headers');
+            if (savedGridData && savedHeaders) {
+                gridData = JSON.parse(savedGridData);
+                headers = JSON.parse(savedHeaders);
+                renderGrid();
+            }
         }
         
         function goToRoster() {
@@ -357,6 +376,8 @@ function generateRosters(gridData) {
         document.getElementById('generateRoster').addEventListener('click', generateRoster);
         document.getElementById('goToRoster').addEventListener('click', goToRoster);
 
+        window.addEventListener('load', loadGridData);
+        
         // Initial grid render with empty data
         renderGrid();
     </script>
