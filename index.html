@@ -41,7 +41,7 @@
         let headers = [];
         
         function loadCSV() {
-            Papa.parse('Membership.csv', {
+            Papa.parse('./Membership.csv', {
                 download: true,
                 header: true,
                 complete: function(results) {
