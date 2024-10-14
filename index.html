@@ -121,16 +121,32 @@
             const tbody = document.querySelector('#playerGrid tbody');
             const row = tbody.insertRow();
             const fields = playerData || ['', '', '', '', ''];
-
+        
             fields.forEach((field, index) => {
                 const cell = row.insertCell();
-                const input = document.createElement('input');
-                input.type = index >= 2 && index <= 4 ? 'number' : 'text';
-                input.value = field;
-                input.min = 0;
-                input.max = 10;
-                input.onchange = saveGridData; // Save grid data whenever any input changes
-                cell.appendChild(input);
+                if (index === 3) {
+                    // Create a dropdown for the Defense column
+                    const select = document.createElement('select');
+                    const defenseOption = document.createElement('option');
+                    defenseOption.value = '1';
+                    defenseOption.text = 'D';
+                    const forwardOption = document.createElement('option');
+                    forwardOption.value = '0';
+                    forwardOption.text = 'F';
+                    select.appendChild(defenseOption);
+                    select.appendChild(forwardOption);
+                    select.value = field === '1' ? '1' : '0'; // Set default value based on playerData or 'F'
+                    select.onchange = saveGridData;
+                    cell.appendChild(select);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = index >= 2 && index <= 4 ? 'number' : 'text';
+                    input.value = field;
+                    input.min = 0;
+                    input.max = 10;
+                    input.onchange = saveGridData; // Save grid data whenever any input changes
+                    cell.appendChild(input);
+                }
             });
         
             const actionCell = row.insertCell();
@@ -142,8 +158,8 @@
                 saveGridData(); // Save grid data after deleting a row
             };
             actionCell.appendChild(deleteButton);
-        
         }
+
 
         function clearGrid() {
             document.querySelector('#playerGrid tbody').innerHTML = '';
