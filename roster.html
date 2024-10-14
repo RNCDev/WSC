@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSC Roster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .team {
+            width: 45%;
+        }
+
+        .red-team {
+            background-color: #ffcccc;
+        }
+
+        .white-team {
+            background-color: #f0f0f0;
+        }
+
+        .position-group {
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WSC Roster</h1>
+    <a href="index.html">Return to Grid</a>
+
+    <div class="container">
+        <div id="redTeam" class="team red-team">
+            <h2>Red Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="redForwards"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="redDefensemen"></ul>
+            </div>
+        </div>
+
+        <div id="whiteTeam" class="team white-team">
+            <h2>White Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="whiteForwards"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="whiteDefensemen"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function displayTeam(teamData, forwardsList, defensemenList) {
+            teamData.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = `${player.firstName} ${player.lastName} (Skill: ${player.skill})`;
+                if (player.defense) {
+                    defensemenList.appendChild(li);
+                } else {
+                    forwardsList.appendChild(li);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const redTeam = JSON.parse(localStorage.getItem('redTeam') || '[]');
+            const whiteTeam = JSON.parse(localStorage.getItem('whiteTeam') || '[]');
+
+            displayTeam(redTeam, document.getElementById('redForwards'), document.getElementById('redDefensemen'));
+            displayTeam(whiteTeam, document.getElementById('whiteForwards'), document.getElementById('whiteDefensemen'));
+        });
+    </script>
+</body>
+</html>
