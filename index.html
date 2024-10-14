@@ -124,7 +124,8 @@
         
             fields.forEach((field, index) => {
                 const cell = row.insertCell();
-                if (index === 3) {
+                
+                if (index === 3) { // Defense column
                     // Create a dropdown for the Defense column
                     const select = document.createElement('select');
                     const defenseOption = document.createElement('option');
@@ -138,6 +139,22 @@
                     select.value = field === '1' ? '1' : '0'; // Set default value based on playerData or 'F'
                     select.onchange = saveGridData;
                     cell.appendChild(select);
+                
+                } else if (index === 4) { // Attendance column
+                    // Create a dropdown for the Attendance column
+                    const select = document.createElement('select');
+                    const yesOption = document.createElement('option');
+                    yesOption.value = '1';
+                    yesOption.text = 'Yes';
+                    const noOption = document.createElement('option');
+                    noOption.value = '0';
+                    noOption.text = 'No';
+                    select.appendChild(yesOption);
+                    select.appendChild(noOption);
+                    select.value = field === '1' ? '1' : '0'; // Set default value based on playerData or 'No'
+                    select.onchange = saveGridData;
+                    cell.appendChild(select);
+                
                 } else {
                     const input = document.createElement('input');
                     input.type = index >= 2 && index <= 4 ? 'number' : 'text';
@@ -160,7 +177,6 @@
             actionCell.appendChild(deleteButton);
         }
 
-
         function clearGrid() {
             document.querySelector('#playerGrid tbody').innerHTML = '';
             localStorage.removeItem('gridData'); // Clear grid data from localStorage
@@ -169,13 +185,13 @@
         function generateRoster() {
             const players = [];
             document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
-                const inputs = row.querySelectorAll('input');
+                const inputs = row.querySelectorAll('input, select'); // Include select elements as well
                 players.push({
                     firstName: inputs[0].value.trim(),
                     lastName: inputs[1].value.trim(),
-                    skill: parseInt(inputs[2].value) || 0,
-                    defense: inputs[3].value === '1',  // Defense is true/false
-                    attendance: inputs[4].value === '1' // Attendance is true/false
+                    skill: parseInt(inputs[2].value) || 0, // Skill as integer
+                    defense: parseInt(inputs[3].value) === 1,  // Convert defense value to a boolean
+                    attendance: parseInt(inputs[4].value) === 1 // Convert attendance value to a boolean
                 });
             });
         
