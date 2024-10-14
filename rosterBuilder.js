@@ -116,19 +116,15 @@ function clearGrid() {
         document.getElementById(id).innerHTML = '';
     });
 
+    // Hide the roster section
+    document.getElementById('rosterSection').style.display = 'none';
+
     // Re-render the empty grid (top grid)
     renderGrid();
-
-    // Switch back to the builder view
-    if (currentView === 'roster') {
-        toggleView(); // Switch back to the builder if in the roster view
-    }
 
     // Scroll back to the top of the page
     scrollToTop();
 }
-
-
 
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
