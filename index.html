@@ -210,11 +210,13 @@
         
         // Function to distribute players evenly between two teams based on skill level
         function assignPlayersToTeams(players, redTeam, whiteTeam) {
+            // Sort players by skill in descending order to ensure we balance teams with top players first
+            players.sort((a, b) => b.skill - a.skill);
+        
             let redSkill = 0;
             let whiteSkill = 0;
         
             players.forEach((player) => {
-                // Random assignment but ensures skill balance
                 if (redSkill <= whiteSkill && redTeam.length < Math.ceil(players.length / 2)) {
                     redTeam.push(player);
                     redSkill += player.skill;
@@ -227,7 +229,7 @@
                 }
             });
         }
-        
+
         // Shuffle function to randomize player list
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
