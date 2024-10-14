@@ -15,11 +15,13 @@ function toggleView() {
         document.getElementById('builderSection').classList.remove('visible');
         document.getElementById('rosterSection').classList.add('visible');
         document.getElementById('toggleButton').textContent = 'Back to Builder';
+        document.getElementById('backToTop').style.display = 'inline'; // Show Back to Top button
         currentView = 'roster';
     } else {
         document.getElementById('builderSection').classList.add('visible');
         document.getElementById('rosterSection').classList.remove('visible');
         document.getElementById('toggleButton').textContent = 'View Roster';
+        document.getElementById('backToTop').style.display = 'none'; // Hide Back to Top button
         currentView = 'builder';
     }
 }
