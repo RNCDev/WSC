@@ -53,40 +53,44 @@
             });
         }
 
-        function renderGrid() {
-            const grid = document.getElementById('memberGrid');
-            grid.innerHTML = '';
-            const headerRow = grid.insertRow();
-            headers.forEach(header => {
-                const th = document.createElement('th');
-                th.textContent = header;
-                headerRow.appendChild(th);
+    function renderGrid() {
+    const grid = document.getElementById('memberGrid');
+    grid.innerHTML = '';
+    const headerRow = grid.insertRow();
+
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+    });
+
+    const actionTh = document.createElement('th');
+    actionTh.textContent = 'Action';
+    actionTh.className = 'header-action';
+    headerRow.appendChild(actionTh);
+
+    gridData.forEach((row, index) => {
+        const tr = grid.insertRow();
+
+        headers.forEach(header => {
+            const td = tr.insertCell();
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = row[header] || '';
+            input.addEventListener('change', e => {
+                gridData[index][header] = e.target.value;
+                saveGridData();
             });
-            const actionTh = document.createElement('th');
-            actionTh.textContent = 'Action';
-            actionTh.className = 'header-action'; // Add a class for consistent styling
-            headerRow.appendChild(actionTh);
-            
-            gridData.forEach((row, index) => {
-                const tr = grid.insertRow();
-                headers.forEach(header => {
-                    const td = tr.insertCell();
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.value = row[header] || '';
-                    input.addEventListener('change', e => {
-                        gridData[index][header] = e.target.value;
-                        saveGridData();
-                    });
-                    td.appendChild(input);
-                });
-                const actionCell = tr.insertCell();
-                actionCell.className = 'action-column';
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = () => deleteRow(index);
-                actionCell.appendChild(deleteButton);
-            });
+            td.appendChild(input);
+        });
+
+        const actionCell = tr.insertCell();
+        actionCell.className = 'action-column';
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = () => deleteRow(index);
+        actionCell.appendChild(deleteButton);
+        });
         }
         
         function addRow() {
@@ -135,9 +139,9 @@
                 return [];
             }
         
-            // Parse tiers and add position property
+            // Parse skills and add position property
             attendingPlayers.forEach(player => {
-                player.Tier = parseFloat(player.Tier);
+                player.Skill = parseFloat(player.Skill);
                 player.position = player.Defense === "1" ? "Defense" : "Forward";
             });
         
@@ -162,27 +166,27 @@
             // Balance teams by swapping players
             balanceTeams();
         
-            console.log(`Final Red Team Total Tier Score: ${teamScores.Red}`);
-            console.log(`Final White Team Total Tier Score: ${teamScores.White}`);
+            console.log(`Final Red Team Total Skill Score: ${teamScores.Red}`);
+            console.log(`Final White Team Total Skill Score: ${teamScores.White}`);
         
             return [...teams.Red, ...teams.White];
         
             // Helper function to assign players by position
             function assignPlayersByPosition(players) {
-                // Group players by tier
-                const tierGroups = groupBy(players, 'Tier');
+                // Group players by skill
+                const skillGroups = groupBy(players, 'Skill');
         
-                // Get unique tiers sorted in descending order
-                const uniqueTiers = Object.keys(tierGroups).map(parseFloat).sort((a, b) => b - a);
+                // Get unique skills sorted in descending order
+                const uniqueSkills = Object.keys(skillGroups).map(parseFloat).sort((a, b) => b - a);
         
-                uniqueTiers.forEach(tier => {
-                    const playersInTier = tierGroups[tier];
+                uniqueSkills.forEach(skill => {
+                    const playersInSkill = skillGroups[skill];
         
-                    // Shuffle players within the tier
-                    shuffleArray(playersInTier);
+                    // Shuffle players within the skill
+                    shuffleArray(playersInSkill);
         
-                    playersInTier.forEach(player => {
-                        // Choose the team with the lower total tier score for this position
+                    playersInSkill.forEach(player => {
+                        // Choose the team with the lower total skill score for this position
                         let teamName;
                         if (teamPositions.Red[player.position] < teamPositions.White[player.position]) {
                             teamName = 'Red';
@@ -197,10 +201,10 @@
                             name: player.Players,
                             position: player.position,
                             team: teamName,
-                            tier: player.Tier
+                            skill: player.Skill
                         });
         
-                        teamScores[teamName] += player.Tier;
+                        teamScores[teamName] += player.Skill;
                         teamPositions[teamName][player.position]++;
                     });
                 });
@@ -245,8 +249,8 @@
                         playerToMove.team = targetTeam;
         
                         // Update scores and counts
-                        teamScores[sourceTeam] -= playerToMove.tier;
-                        teamScores[targetTeam] += playerToMove.tier;
+                        teamScores[sourceTeam] -= playerToMove.skill;
+                        teamScores[targetTeam] += playerToMove.skill;
         
                         teamPositions[sourceTeam][position]--;
                         teamPositions[targetTeam][position]++;
@@ -257,7 +261,7 @@
                 });
             }
         
-            // Helper function to balance team tier scores by swapping players
+            // Helper function to balance team skill scores by swapping players
             function balanceTeams() {
                 let redScore = teamScores.Red;
                 let whiteScore = teamScores.White;
@@ -287,8 +291,8 @@
                             if (sourcePlayer.position !== targetPlayer.position) continue;
         
                             // Calculate new scores if swapped
-                            const newRedScore = redScore - sourcePlayer.tier + targetPlayer.tier;
-                            const newWhiteScore = whiteScore - targetPlayer.tier + sourcePlayer.tier;
+                            const newRedScore = redScore - sourcePlayer.skill + targetPlayer.skill;
+                            const newWhiteScore = whiteScore - targetPlayer.skill + sourcePlayer.skill;
                             const newDifference = Math.abs(newRedScore - newWhiteScore);
         
                             if (newDifference < Math.abs(redScore - whiteScore)) {
