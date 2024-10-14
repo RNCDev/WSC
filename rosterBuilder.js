@@ -29,15 +29,15 @@ function handleFileUpload(event) {
         complete: function(results) {
             gridData = results.data;
             headers = results.meta.fields;
-            console.log('Parsed CSV Data:', gridData); // Log parsed data for debugging
+            console.log('Parsed CSV Data:', gridData); // Debugging to check parsed data
             saveGridData();
             renderGrid();
-            document.getElementById('builderSection').classList.add('visible');
         },
         error: error => console.error('Error parsing CSV:', error)
     });
 }
 
+document.getElementById('fileInput').addEventListener('change', handleFileUpload);
 function renderGrid() {
     const grid = document.getElementById('memberGrid');
     grid.innerHTML = '';
