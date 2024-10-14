@@ -120,19 +120,7 @@
         function addRow(playerData) {
             const tbody = document.querySelector('#playerGrid tbody');
             const row = tbody.insertRow();
-
-            const defenseCell = row.insertCell();
-            const defenseSelect = document.createElement('select');
             const fields = playerData || ['', '', '', '', ''];
-
-            defenseSelect.innerHTML = `
-                <option value="1">D</option>
-                <option value="0">F</option>
-            `;
-            
-            defenseSelect.value = playerData[3] === '1' ? '1' : '0';
-            defenseSelect.onchange = saveGridData; // Save grid data whenever the dropdown changes
-            defenseCell.appendChild(defenseSelect);
 
             fields.forEach((field, index) => {
                 const cell = row.insertCell();
