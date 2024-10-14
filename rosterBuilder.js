@@ -166,9 +166,11 @@ function generateRoster() {
     const rosters = generateRosters(gridData);
     if (rosters.length > 0) {
         displayRosters(rosters);
-        toggleView(); 
+        document.getElementById('rosterSection').style.display = 'block'; // Show the roster section
+        scrollToTop(); // Optionally scroll to the top of the page
     } else {
         alert("No rosters generated. Please check the player data.");
+        document.getElementById('rosterSection').style.display = 'none'; // Hide the roster section if no roster is generated
     }
 }
 
