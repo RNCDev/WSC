@@ -155,6 +155,13 @@ function generateRoster() {
     }
 }
 
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
 function displayRosters(teamData) {
     ['redForward', 'redDefense', 'whiteForward', 'whiteDefense'].forEach(id => {
         document.getElementById(id).innerHTML = '';
