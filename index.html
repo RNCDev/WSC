@@ -187,13 +187,14 @@
     
         // Redirect to roster.html
         window.location.href = 'roster.html';
-        
+        }
+
         // Function to distribute players evenly between two teams based on skill level
         function assignPlayersToTeams(players, redTeam, whiteTeam) {
             let redSkill = 0;
             let whiteSkill = 0;
         
-            players.forEach((player, index) => {
+            players.forEach((player) => {
                 if (redSkill <= whiteSkill) {
                     redTeam.push(player);
                     redSkill += player.skill;
@@ -203,15 +204,7 @@
                 }
             });
         }
-        
-        
-        // Store teams in localStorage to be used in roster.html
-        localStorage.setItem('redTeam', JSON.stringify(redTeam));
-        localStorage.setItem('whiteTeam', JSON.stringify(whiteTeam));
 
-        // Redirect to roster.html
-        window.location.href = 'roster.html';
-    
         // Load grid data from localStorage when the page is loaded
         document.addEventListener('DOMContentLoaded', loadGridData);
     </script>
