@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
+    <title>WSC Roster Builder</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script defer src="rosterBuilder.js"></script>
+</head>
+<body>
+    <h1>WSC Roster Builder</h1>
+
+    <div id="builderSection" class="section">
+        <div class="instructions">
+            <h2>Instructions:</h2>
+            <ol>
+                <li>Upload a CSV file with player data using the "Upload CSV" button.</li>
+                <li>Edit player information directly in the grid [Name, Skill, Defense/Offense, Attendance].</li>
+                <li>Add or remove rows as needed.</li>
+                <li>Click "Generate Roster" to create balanced teams.</li>
+            </ol>
+        </div>
+        <input type="file" id="fileInput" accept=".csv" style="display:none;">
+        <button id="uploadButton">Upload CSV</button>
+        <button id="addRow">Add Row</button>
+        <button id="generateRoster">Generate Roster</button>
+        <button id="clearGrid">Clear</button>
+        <table id="memberGrid"></table>
+    </div>
+    <div id="rosterSection" class="section" style="display: none;">
+        <div class="team red-team">
+            <h2>Red Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="redForward"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="redDefense"></ul>
+            </div>
+        </div>
+        <div class="team white-team">
+            <h2>White Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="whiteForward"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="whiteDefense"></ul>
+            </div>
+        </div>
+    </div>
+=======
+    <title>Interactive Membership Grid</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        table { border-collapse: separate; border-spacing: 0; width: 100%; }
+        th, td { 
+            padding: 6px 8px; 
+            text-align: left; 
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th { background-color: #f2f2f2 !important; }
+        td:last-child { background-color: transparent; }
+        button { margin: 10px 5px 10px 0; padding: 5px 10px; }
+        input[type="text"] { 
+            width: 90%; 
+            padding: 4px; 
+            border: none; 
+            background-color: transparent; 
+            font-size: 14px;
+        }
+        .action-column { width: 80px; }
+        #memberGrid tr:first-child th:last-child {
+            background-color: #f2f2f2 !important;
+        }
+        #fileInput { display: none; }
+<<<<<<< HEAD
+=======
+        .instructions { background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+<<<<<<< HEAD
+>>>>>>> parent of 0aabaf8 (Update index.html)
+=======
+>>>>>>> parent of 0aabaf8 (Update index.html)
+    </style>
+</head>
+<body>
+    <h1>WSC Roster Builder</h1>
+    <input type="file" id="fileInput" accept=".csv">
+    <button id="uploadButton">Upload CSV</button>
+    <button id="addRow">Add Row</button>
+    <button id="generateRoster">Generate Roster</button>
+    <button id="goToRoster">Go to Roster</button>
+    <table id="memberGrid"></table>
+    <script>
+        let gridData = [];
+        let headers = [];
+        
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                Papa.parse(file, {
+                    complete: function(results) {
+                        gridData = results.data;
+                        headers = results.meta.fields;
+                        console.log("CSV data loaded:", gridData);
+                        saveGridData();
+                        renderGrid();
+                    },
+                    header: true,
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                    }
+                });
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('memberGrid');
+            grid.innerHTML = '';
+            const headerRow = grid.insertRow();
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            headerRow.insertCell().textContent = 'Action';
+            gridData.forEach((row, index) => {
+                const tr = grid.insertRow();
+                headers.forEach(header => {
+                    const td = tr.insertCell();
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = row[header] || '';
+                    input.addEventListener('change', (e) => {
+                        gridData[index][header] = e.target.value;
+                        saveGridData();
+                    });
+                    td.appendChild(input);
+                });
+                
+                const actionCell = tr.insertCell();
+                actionCell.className = 'action-column';
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteRow(index);
+                actionCell.appendChild(deleteButton);
+            });
+        }
+        
+        function addRow() {
+            const newRow = {};
+            headers.forEach(header => newRow[header] = '');
+            gridData.push(newRow);
+            saveGridData();
+            renderGrid();
+        }
+        
+        function deleteRow(index) {
+            gridData.splice(index, 1);
+            saveGridData();
+            renderGrid();
+        }
+
+        function saveGridData() {
+        localStorage.setItem('gridData', JSON.stringify(gridData));
+        localStorage.setItem('headers', JSON.stringify(headers));
+        }
+
+        function loadGridData() {
+            const savedGridData = localStorage.getItem('gridData');
+            const savedHeaders = localStorage.getItem('headers');
+            if (savedGridData && savedHeaders) {
+                gridData = JSON.parse(savedGridData);
+                headers = JSON.parse(savedHeaders);
+                renderGrid();
+            }
+        }
+        
+        function goToRoster() {
+            window.location.href = 'roster.html';
+        }
+
+
+function generateRosters(gridData) {
+    const attendingPlayers = gridData.filter(player => player.Attendance === "1");
+    if (attendingPlayers.length === 0) {
+        console.warn("No attending players found. Cannot generate rosters.");
+        return [];
+    }
+
+    // Parse tiers and add position property
+    attendingPlayers.forEach(player => {
+        player.Tier = parseFloat(player.Tier);
+        player.position = player.Defense === "1" ? "Defense" : "Forward";
+    });
+
+    // Group players by position
+    const defensePlayers = attendingPlayers.filter(player => player.position === "Defense");
+    const forwardPlayers = attendingPlayers.filter(player => player.position === "Forward");
+
+    const teams = { Red: [], White: [] };
+    const teamScores = { Red: 0, White: 0 };
+    const teamPositions = {
+        Red: { Defense: 0, Forward: 0 },
+        White: { Defense: 0, Forward: 0 },
+    };
+
+    // Assign players by position with balancing
+    assignPlayersByPosition(defensePlayers);
+    assignPlayersByPosition(forwardPlayers);
+
+    // Balance positions if necessary
+    balancePositions();
+
+    // Balance teams by swapping players
+    balanceTeams();
+
+    console.log(`Final Red Team Total Tier Score: ${teamScores.Red}`);
+    console.log(`Final White Team Total Tier Score: ${teamScores.White}`);
+
+    return [...teams.Red, ...teams.White];
+
+    // Helper function to assign players by position
+    function assignPlayersByPosition(players) {
+        // Group players by tier
+        const tierGroups = groupBy(players, 'Tier');
+
+        // Get unique tiers sorted in descending order
+        const uniqueTiers = Object.keys(tierGroups).map(parseFloat).sort((a, b) => b - a);
+
+        uniqueTiers.forEach(tier => {
+            const playersInTier = tierGroups[tier];
+
+            // Shuffle players within the tier
+            shuffleArray(playersInTier);
+
+            playersInTier.forEach(player => {
+                // Choose the team with the lower total tier score for this position
+                let teamName;
+                if (teamPositions.Red[player.position] < teamPositions.White[player.position]) {
+                    teamName = 'Red';
+                } else if (teamPositions.Red[player.position] > teamPositions.White[player.position]) {
+                    teamName = 'White';
+                } else {
+                    // If counts are equal, randomly choose a team
+                    teamName = Math.random() < 0.5 ? 'Red' : 'White';
+                }
+
+                teams[teamName].push({
+                    name: player.Players,
+                    position: player.position,
+                    team: teamName,
+                    tier: player.Tier
+                });
+
+                teamScores[teamName] += player.Tier;
+                teamPositions[teamName][player.position]++;
+            });
+        });
+    }
+
+    // Helper function to group players by a key
+    function groupBy(array, key) {
+        return array.reduce((result, currentItem) => {
+            (result[currentItem[key]] = result[currentItem[key]] || []).push(currentItem);
+            return result;
+        }, {});
+    }
+
+    // Helper function to shuffle an array in place
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Helper function to balance positions between teams
+    function balancePositions() {
+        ['Defense', 'Forward'].forEach(position => {
+            let redCount = teamPositions.Red[position];
+            let whiteCount = teamPositions.White[position];
+
+            while (Math.abs(redCount - whiteCount) > 1) {
+                const sourceTeam = redCount > whiteCount ? 'Red' : 'White';
+                const targetTeam = sourceTeam === 'Red' ? 'White' : 'Red';
+
+                // Find a random player to move
+                const sourcePlayers = teams[sourceTeam].filter(p => p.position === position);
+                if (sourcePlayers.length === 0) break;
+
+                // Choose a random player to move
+                const playerToMove = sourcePlayers[Math.floor(Math.random() * sourcePlayers.length)];
+
+                // Move the player
+                teams[sourceTeam] = teams[sourceTeam].filter(p => p !== playerToMove);
+                teams[targetTeam].push(playerToMove);
+                playerToMove.team = targetTeam;
+
+                // Update scores and counts
+                teamScores[sourceTeam] -= playerToMove.tier;
+                teamScores[targetTeam] += playerToMove.tier;
+
+                teamPositions[sourceTeam][position]--;
+                teamPositions[targetTeam][position]++;
+
+                redCount = teamPositions.Red[position];
+                whiteCount = teamPositions.White[position];
+            }
+        });
+    }
+
+    // Helper function to balance team tier scores by swapping players
+    function balanceTeams() {
+        let redScore = teamScores.Red;
+        let whiteScore = teamScores.White;
+
+        let improved = true;
+        while (improved && Math.abs(redScore - whiteScore) > 0.5) {
+            improved = false;
+
+            const sourceTeam = redScore > whiteScore ? 'Red' : 'White';
+            const targetTeam = sourceTeam === 'Red' ? 'White' : 'Red';
+
+            // Attempt to find a swap that improves the balance
+            const sourcePlayers = teams[sourceTeam];
+            const targetPlayers = teams[targetTeam];
+
+            // Shuffle source and target players to introduce randomness
+            shuffleArray(sourcePlayers);
+            shuffleArray(targetPlayers);
+
+            outerLoop:
+            for (let i = 0; i < sourcePlayers.length; i++) {
+                for (let j = 0; j < targetPlayers.length; j++) {
+                    const sourcePlayer = sourcePlayers[i];
+                    const targetPlayer = targetPlayers[j];
+
+                    // Swap players only if they play the same position
+                    if (sourcePlayer.position !== targetPlayer.position) continue;
+
+                    // Calculate new scores if swapped
+                    const newRedScore = redScore - sourcePlayer.tier + targetPlayer.tier;
+                    const newWhiteScore = whiteScore - targetPlayer.tier + sourcePlayer.tier;
+                    const newDifference = Math.abs(newRedScore - newWhiteScore);
+
+                    if (newDifference < Math.abs(redScore - whiteScore)) {
+                        // Perform swap
+                        teams[sourceTeam][teams[sourceTeam].indexOf(sourcePlayer)] = targetPlayer;
+                        teams[targetTeam][teams[targetTeam].indexOf(targetPlayer)] = sourcePlayer;
+
+                        sourcePlayer.team = targetTeam;
+                        targetPlayer.team = sourceTeam;
+
+                        teamScores[sourceTeam] = newRedScore;
+                        teamScores[targetTeam] = newWhiteScore;
+
+                        redScore = newRedScore;
+                        whiteScore = newWhiteScore;
+
+                        improved = true;
+                        break outerLoop;
+                    }
+                }
+            }
+        }
+    }
+}
+
+        function generateRoster() {
+            console.log("Grid data before roster generation:", gridData);
+            const rosters = generateRosters(gridData);
+            console.log("Generated rosters:", rosters);
+            if (rosters.length === 0) {
+                console.warn("No rosters generated.");
+            } else {
+                localStorage.setItem('rosterData', JSON.stringify(rosters));
+                console.log("Roster data saved to localStorage:", localStorage.getItem('rosterData'));
+                window.location.href = 'roster.html';
+            }
+            }
+    
+        function testRosterGeneration(iterations = 100) {
+        let totalStats = {
+            Red: { Defense: { count: 0, skill: 0 }, Forward: { count: 0, skill: 0 } },
+            White: { Defense: { count: 0, skill: 0 }, Forward: { count: 0, skill: 0 } }
+        };
+    
+        for (let i = 0; i < iterations; i++) {
+            const roster = generateRosters(gridData);
+            
+            roster.forEach(player => {
+                totalStats[player.team][player.position].count++;
+                totalStats[player.team][player.position].skill += player.tier;
+            });
+        }
+    
+        // Calculate averages
+        for (let team in totalStats) {
+            for (let position in totalStats[team]) {
+                totalStats[team][position].avgCount = totalStats[team][position].count / iterations;
+                totalStats[team][position].avgSkill = totalStats[team][position].skill / totalStats[team][position].count;
+            }
+        }
+    
+        console.log("Average stats over", iterations, "iterations:", totalStats);
+    
+        // Calculate differences
+        const redDefCount = totalStats.Red.Defense.avgCount;
+        const whiteDefCount = totalStats.White.Defense.avgCount;
+        const redFwdCount = totalStats.Red.Forward.avgCount;
+        const whiteFwdCount = totalStats.White.Forward.avgCount;
+    
+        const redDefSkill = totalStats.Red.Defense.avgSkill;
+        const whiteDefSkill = totalStats.White.Defense.avgSkill;
+        const redFwdSkill = totalStats.Red.Forward.avgSkill;
+        const whiteFwdSkill = totalStats.White.Forward.avgSkill;
+    
+        console.log("Differences:");
+        console.log("Defensemen count difference:", Math.abs(redDefCount - whiteDefCount));
+        console.log("Forwards count difference:", Math.abs(redFwdCount - whiteFwdCount));
+        console.log("Defensemen skill difference:", Math.abs(redDefSkill - whiteDefSkill));
+        console.log("Forwards skill difference:", Math.abs(redFwdSkill - whiteFwdSkill));
+        }
+
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        document.getElementById('uploadButton').addEventListener('click', () => document.getElementById('fileInput').click());
+        document.getElementById('addRow').addEventListener('click', addRow);
+        document.getElementById('generateRoster').addEventListener('click', generateRoster);
+        document.getElementById('goToRoster').addEventListener('click', goToRoster);
+
+        window.addEventListener('load', loadGridData);
+        
+        // Initial grid render with empty data
+        renderGrid();
+    </script>
+>>>>>>> parent of 23ed18c (Concise index.html)
+</body>
+</html>
