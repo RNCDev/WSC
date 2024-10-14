@@ -112,9 +112,10 @@
     </div>
 
     <script>
+    
         function displayRosters(teamData) {
             console.log("Displaying rosters for team data:", teamData);
-            
+        
             // Clear existing lists
             document.getElementById('redForward').innerHTML = '';
             document.getElementById('redDefense').innerHTML = '';
@@ -123,14 +124,19 @@
         
             teamData.forEach(player => {
                 const li = document.createElement('li');
-                li.textContent = `${player.name} (Tier ${player.tier})`;
-                
-                const listId = `${player.team.toLowerCase()}${player.position}`;
+                // Combine First and Last name
+                const fullName = `${player.First} ${player.Last}`;
+                li.textContent = `${fullName} (Skill: ${player.Skill})`;
+        
+                // Determine if the player is Forward or Defense
+                const position = player.Defense === "1" ? 'Defense' : 'Forward';
+                const listId = `${player.team.toLowerCase()}${position}`;
+        
                 const list = document.getElementById(listId);
                 if (list) {
                     list.appendChild(li);
                 } else {
-                    console.error(`List not found for player: ${player.name}, team: ${player.team}, position: ${player.position}, listId: ${listId}`);
+                    console.error(`List not found for player: ${fullName}, team: ${player.team}, position: ${position}`);
                 }
             });
         }
