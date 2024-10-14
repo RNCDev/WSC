@@ -24,25 +24,56 @@ function toggleView() {
 }
 
 function handleFileUpload(event) {
-    Papa.parse(event.target.files[0], {
+    const file = event.target.files[0];
+    
+    if (!file) {
+        console.error('No file selected!');
+        return;
+    }
+
+    // Parse the CSV
+    Papa.parse(file, {
         header: true,
         complete: function(results) {
+            console.log('CSV Parsing Results:', results); // Debugging
+
+            // Check if headers are present and data is valid
+            if (results.meta.fields.length === 0) {
+                console.error('No headers found in the CSV!');
+                alert('Error: No headers found in the CSV file. Please check the file.');
+                return;
+            }
+
+            // Store the parsed data and headers
             gridData = results.data;
             headers = results.meta.fields;
-            console.log('Parsed CSV Data:', gridData); // Debugging to check parsed data
+
+            // Debug: Check parsed grid data
+            console.log('Parsed gridData:', gridData);
+            console.log('Parsed headers:', headers);
+
+            // Save data and render the grid
             saveGridData();
             renderGrid();
         },
-        error: error => console.error('Error parsing CSV:', error)
+        error: function(error) {
+            console.error('Error parsing CSV:', error);
+        }
     });
 }
-
 document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
 function renderGrid() {
     const grid = document.getElementById('memberGrid');
     grid.innerHTML = '';
-    const headerRow = grid.insertRow();
 
+    if (!headers || headers.length === 0) {
+        console.warn('No headers to display!');
+        return;
+    }
+
+    // Create the header row
+    const headerRow = grid.insertRow();
     headers.forEach(header => {
         const th = document.createElement('th');
         th.textContent = header;
@@ -53,6 +84,7 @@ function renderGrid() {
     actionTh.textContent = 'Action';
     headerRow.appendChild(actionTh);
 
+    // Create rows for each entry
     gridData.forEach((row, index) => {
         const tr = grid.insertRow();
 
@@ -68,6 +100,7 @@ function renderGrid() {
             td.appendChild(input);
         });
 
+        // Action buttons
         const actionCell = tr.insertCell();
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
@@ -111,23 +144,21 @@ function clearGrid() {
     localStorage.removeItem('gridData');
     localStorage.removeItem('headers');
 
-    // Clear the file input (so you can upload another CSV after clearing)
-    document.getElementById('fileInput').value = ''; // Reset file input
+    // Reset the file input so a new file can be uploaded
+    document.getElementById('fileInput').value = '';
 
-    // Clear the roster sections (forwards and defense for both teams)
+    // Clear the member grid and hide the roster section
+    document.getElementById('memberGrid').innerHTML = '';
+    document.getElementById('rosterSection').style.display = 'none';
+
+    // Clear the rosters
     ['redForward', 'redDefense', 'whiteForward', 'whiteDefense'].forEach(id => {
         document.getElementById(id).innerHTML = '';
     });
 
-    // Hide the roster section
-    document.getElementById('rosterSection').style.display = 'none';
-
-    // Re-render the empty grid (top grid)
-    renderGrid();
-
-    // Scroll back to the top of the page
-    scrollToTop();
+    console.log('Grid and rosters cleared.');
 }
+
 
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
