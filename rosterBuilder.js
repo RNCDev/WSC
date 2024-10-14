@@ -160,6 +160,9 @@ function generateRosters(gridData) {
 
 function generateRoster() {
     const rosters = generateRosters(gridData);
+
+    console.log('Generated Rosters:', rosters); // Debugging log to check if rosters are being generated
+
     if (rosters.length > 0) {
         displayRosters(rosters);
         document.getElementById('rosterSection').style.display = 'block'; // Show the roster section
@@ -170,6 +173,7 @@ function generateRoster() {
     }
 }
 
+
 function scrollToTop() {
     window.scrollTo({
         top: 0,
@@ -178,14 +182,22 @@ function scrollToTop() {
 }
 
 function displayRosters(teamData) {
+    // Clear existing roster lists
     ['redForward', 'redDefense', 'whiteForward', 'whiteDefense'].forEach(id => {
         document.getElementById(id).innerHTML = '';
     });
 
+    // Populate the roster lists with players
     teamData.forEach(player => {
         const li = document.createElement('li');
         li.textContent = `${player.First} ${player.Last} (Skill: ${player.Skill})`;
         const listId = `${player.team.toLowerCase()}${player.position}`;
-        document.getElementById(listId).appendChild(li);
+        
+        const listElement = document.getElementById(listId);
+        if (listElement) {
+            listElement.appendChild(li); // Append player to the correct team and position
+        } else {
+            console.warn(`No list found for ${listId}`);
+        }
     });
 }
