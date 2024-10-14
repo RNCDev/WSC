@@ -112,28 +112,61 @@ function generateRoster() {
     const forwards = attendingPlayers.filter(player => player.Defense !== "1");
     const defensemen = attendingPlayers.filter(player => player.Defense === "1");
 
-    // Shuffle players for randomness
-    shuffleArray(forwards);
-    shuffleArray(defensemen);
+    // Sort players by skill level (assuming higher number means higher skill)
+    forwards.sort((a, b) => parseInt(b.Skill) - parseInt(a.Skill));
+    defensemen.sort((a, b) => parseInt(b.Skill) - parseInt(a.Skill));
 
-    const teamSize = Math.min(forwards.length, defensemen.length) / 2; // Ensure even teams
     const teams = { Red: [], White: [] };
 
-    for (let i = 0; i < teamSize; i++) {
-        teams.Red.push(forwards.pop());
-        teams.Red.push(defensemen.pop());
-        teams.White.push(forwards.pop());
-        teams.White.push(defensemen.pop());
-    }
+    // Distribute forwards
+    distributePlayers(forwards, teams, 'Red', 'White');
+
+    // Distribute defensemen
+    distributePlayers(defensemen, teams, 'White', 'Red');
+
+    // Balance teams if needed
+    balanceTeams(teams);
 
     displayRosters(teams);
 }
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+function distributePlayers(players, teams, team1, team2) {
+    for (let i = 0; i < players.length; i++) {
+        if (i % 2 === 0) {
+            teams[team1].push(players[i]);
+        } else {
+            teams[team2].push(players[i]);
+        }
     }
+}
+
+function balanceTeams(teams) {
+    const getTeamSkill = (team) => team.reduce((sum, player) => sum + parseInt(player.Skill), 0);
+
+    let redSkill = getTeamSkill(teams.Red);
+    let whiteSkill = getTeamSkill(teams.White);
+
+    while (Math.abs(redSkill - whiteSkill) > 2) { // Allow small difference
+        if (redSkill > whiteSkill) {
+            swapPlayers(teams.Red, teams.White);
+        } else {
+            swapPlayers(teams.White, teams.Red);
+        }
+        
+        redSkill = getTeamSkill(teams.Red);
+        whiteSkill = getTeamSkill(teams.White);
+    }
+}
+
+function swapPlayers(fromTeam, toTeam) {
+    const highestSkill = fromTeam.reduce((max, player) => Math.max(max, parseInt(player.Skill)), 0);
+    const lowestSkill = toTeam.reduce((min, player) => Math.min(min, parseInt(player.Skill)), Infinity);
+
+    const playerToSwap1 = fromTeam.find(player => parseInt(player.Skill) === highestSkill);
+    const playerToSwap2 = toTeam.find(player => parseInt(player.Skill) === lowestSkill);
+
+    fromTeam[fromTeam.indexOf(playerToSwap1)] = playerToSwap2;
+    toTeam[toTeam.indexOf(playerToSwap2)] = playerToSwap1;
 }
 
 function displayRosters(teams) {
@@ -142,15 +175,25 @@ function displayRosters(teams) {
     redList.innerHTML = '';
     whiteList.innerHTML = '';
 
-    teams.Red.forEach(player => {
+    displayTeamRoster(teams.Red, redList);
+    displayTeamRoster(teams.White, whiteList);
+}
+
+function displayTeamRoster(team, listElement) {
+    const forwards = team.filter(player => player.Defense !== "1");
+    const defensemen = team.filter(player => player.Defense === "1");
+
+    listElement.innerHTML += '<h3>Forwards</h3>';
+    forwards.forEach(player => {
         const li = document.createElement('li');
         li.textContent = `${player.First} ${player.Last} (Skill: ${player.Skill})`;
-        redList.appendChild(li);
+        listElement.appendChild(li);
     });
 
-    teams.White.forEach(player => {
+    listElement.innerHTML += '<h3>Defensemen</h3>';
+    defensemen.forEach(player => {
         const li = document.createElement('li');
         li.textContent = `${player.First} ${player.Last} (Skill: ${player.Skill})`;
-        whiteList.appendChild(li);
+        listElement.appendChild(li);
     });
 }
