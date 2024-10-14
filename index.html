@@ -52,7 +52,9 @@
             </ol>
         </div>
 
+        <!-- Hidden file input -->
         <input type="file" id="csvFile" accept=".csv" style="display:none;">
+        <!-- Modified Upload CSV button -->
         <button onclick="uploadCSV()">Upload CSV</button>
         <button onclick="addRow()">Add Row</button>
         <button onclick="generateRoster()">Generate Roster</button>
@@ -76,19 +78,25 @@
     <script>
         function uploadCSV() {
             const fileInput = document.getElementById('csvFile');
-            const file = fileInput.files[0];
+            // Trigger the file selection dialog
+            fileInput.click();
+        }
+
+        // Add an event listener to handle the file once it's selected
+        document.getElementById('csvFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
 
             if (!file) {
-            alert('Please select a CSV file first!');
-            return;
+                alert('Please select a CSV file first!');
+                return;
             }
-        
+
             Papa.parse(file, {
                 complete: function (results) {
                     const players = results.data.slice(1); // Skip header row
                     const tbody = document.querySelector('#playerGrid tbody');
                     tbody.innerHTML = '';
-        
+
                     players.forEach(player => {
                         if (player.length === 5) { // Ensure the row has all fields
                             addRow(player);
@@ -99,7 +107,7 @@
                     console.error("Error parsing CSV: ", error);
                 }
             });
-        }
+        });
 
         function addRow(playerData) {
             const tbody = document.querySelector('#playerGrid tbody');
