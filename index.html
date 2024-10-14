@@ -60,6 +60,28 @@
 
     <!-- Scripts -->
     <script>
+         // Save the current state of the grid to localStorage
+        function saveGridData() {
+            const players = [];
+            document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                players.push({
+                    firstName: inputs[0].value.trim(),
+                    lastName: inputs[1].value.trim(),
+                    skill: inputs[2].value,
+                    defense: inputs[3].value,
+                    attendance: inputs[4].value
+                });
+            });
+            localStorage.setItem('gridData', JSON.stringify(players));
+        }
+
+        // Load the grid data from localStorage
+        function loadGridData() {
+            const gridData = JSON.parse(localStorage.getItem('gridData') || '[]');
+            gridData.forEach(player => addRow([player.firstName, player.lastName, player.skill, player.defense, player.attendance]));
+        }
+        
         function uploadCSV() {
             const fileInput = document.getElementById('csvFile');
             fileInput.click();
@@ -151,6 +173,9 @@
 
             // Redirect to roster.html
             window.location.href = 'roster.html';
+
+             // Load grid data from localStorage when the page is loaded
+            document.addEventListener('DOMContentLoaded', loadGridData);
         }
     </script>
 </body>
