@@ -2,7 +2,6 @@ let gridData = [], headers = [];
 let currentView = 'builder';
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('fileInput').addEventListener('change', handleFileUpload);
     document.getElementById('uploadButton').onclick = () => document.getElementById('fileInput').click();
     document.getElementById('addRow').onclick = addRow;
     document.getElementById('generateRoster').onclick = generateRoster;
