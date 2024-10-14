@@ -44,6 +44,19 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Skill Comparison -->
+        <div id="skillComparison" class="skill-comparison">
+            <h3>Skill Level Comparison</h3>
+            <ul>
+                <li>Red Team Avg Skill: <span id="redTeamSkill"></span></li>
+                <li>White Team Avg Skill: <span id="whiteTeamSkill"></span></li>
+                <li>Red Forwards Avg Skill: <span id="redForwardsSkill"></span></li>
+                <li>White Forwards Avg Skill: <span id="whiteForwardsSkill"></span></li>
+                <li>Red Defense Avg Skill: <span id="redDefenseSkill"></span></li>
+                <li>White Defense Avg Skill: <span id="whiteDefenseSkill"></span></li>
+            </ul>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -61,13 +74,41 @@
             });
         }
 
+        function calculateAverageSkill(teamData, isDefense) {
+            const players = teamData.filter(player => player.defense === isDefense);
+            if (players.length === 0) return 0;
+            const totalSkill = players.reduce((acc, player) => acc + player.skill, 0);
+            return (totalSkill / players.length).toFixed(2);
+        }
+        
+        function updateSkillComparison(redTeam, whiteTeam) {
+            const redTeamSkill = (redTeam.reduce((acc, player) => acc + player.skill, 0) / redTeam.length).toFixed(2);
+            const whiteTeamSkill = (whiteTeam.reduce((acc, player) => acc + player.skill, 0) / whiteTeam.length).toFixed(2);
+        
+            const redForwardsSkill = calculateAverageSkill(redTeam, false);
+            const whiteForwardsSkill = calculateAverageSkill(whiteTeam, false);
+        
+            const redDefenseSkill = calculateAverageSkill(redTeam, true);
+            const whiteDefenseSkill = calculateAverageSkill(whiteTeam, true);
+        
+            document.getElementById('redTeamSkill').textContent = redTeamSkill;
+            document.getElementById('whiteTeamSkill').textContent = whiteTeamSkill;
+            document.getElementById('redForwardsSkill').textContent = redForwardsSkill;
+            document.getElementById('whiteForwardsSkill').textContent = whiteForwardsSkill;
+            document.getElementById('redDefenseSkill').textContent = redDefenseSkill;
+            document.getElementById('whiteDefenseSkill').textContent = whiteDefenseSkill;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const redTeam = JSON.parse(localStorage.getItem('redTeam') || '[]');
             const whiteTeam = JSON.parse(localStorage.getItem('whiteTeam') || '[]');
 
             displayTeam(redTeam, document.getElementById('redForwards'), document.getElementById('redDefensemen'));
             displayTeam(whiteTeam, document.getElementById('whiteForwards'), document.getElementById('whiteDefensemen'));
+
+            updateSkillComparison(redTeam, whiteTeam);
         });
+        
     </script>
 </body>
 </html>
