@@ -152,38 +152,58 @@
 
         function generateRoster() {
             const players = [];
+            const excludedPlayers = []; // To keep track of excluded players
+    
             document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
                 const inputs = row.querySelectorAll('input');
+                const attendance = inputs[4].value === '1';
+    
+                if (!attendance) {
+                    // Optionally, collect excluded players' names for feedback
+                    excludedPlayers.push(`${inputs[0].value.trim()} ${inputs[1].value.trim()}`);
+                    return; // Skip this player
+                }
+    
                 players.push({
                     firstName: inputs[0].value.trim(),
                     lastName: inputs[1].value.trim(),
                     skill: parseInt(inputs[2].value) || 0,
                     defense: inputs[3].value === '1',  // Defense is true/false
-                    attendance: inputs[4].value === '1' // Attendance is true/false
+                    attendance: attendance
                 });
             });
-        
+    
+            if (players.length === 0) {
+                alert('No players with attendance marked as present. Please check your data.');
+                return;
+            }
+    
+            // Optionally, inform the user about excluded players
+            if (excludedPlayers.length > 0) {
+                alert(`${excludedPlayers.length} player(s) excluded due to attendance marked as 0:\n- ${excludedPlayers.join('\n- ')}`);
+            }
+    
             // Separate players into forwards and defensemen
             let forwards = players.filter(player => !player.defense);
             let defensemen = players.filter(player => player.defense);
-        
+    
             // Randomize the players within their positions using a shuffle function
             forwards = shuffle(forwards);
             defensemen = shuffle(defensemen);
-        
+    
             // No sorting by skill anymore to allow randomness
             const redTeam = { forwards: [], defensemen: [] };
             const whiteTeam = { forwards: [], defensemen: [] };
-        
+    
             // Distribute forwards to balance skill levels and player count
             assignPlayersToTeams(forwards, redTeam.forwards, whiteTeam.forwards);
             // Distribute defensemen to balance skill levels and player count
             assignPlayersToTeams(defensemen, redTeam.defensemen, whiteTeam.defensemen);
-        
+    
             // Store teams in localStorage
             localStorage.setItem('redTeam', JSON.stringify([...redTeam.forwards, ...redTeam.defensemen]));
             localStorage.setItem('whiteTeam', JSON.stringify([...whiteTeam.forwards, ...whiteTeam.defensemen]));
-        
+    
             // Redirect to roster.html
             window.location.href = 'roster.html';
         }
