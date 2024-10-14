@@ -10,7 +10,7 @@
 </head>
 <body>
     <h1>WSC Roster Builder</h1>
-    <button id="toggleButton" onclick="toggleView()">Build Roster</button>
+
     <div id="builderSection" class="section">
         <div class="instructions">
             <h2>Instructions:</h2>
@@ -28,30 +28,29 @@
         <button id="clearGrid">Clear</button>
         <table id="memberGrid"></table>
     </div>
-    <div id="rosterSection" class="section">
-    <button id="backToTop" onclick="scrollToTop()" style="display:none;">Back to Top</button>
-    <div class="team red-team">
-        <h2>Red Team</h2>
-        <div class="position-group">
-            <h3>Forwards</h3>
-            <ul id="redForward"></ul>
+    <div id="rosterSection" class="section" style="display: none;">
+        <div class="team red-team">
+            <h2>Red Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="redForward"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="redDefense"></ul>
+            </div>
         </div>
-        <div class="position-group">
-            <h3>Defensemen</h3>
-            <ul id="redDefense"></ul>
+        <div class="team white-team">
+            <h2>White Team</h2>
+            <div class="position-group">
+                <h3>Forwards</h3>
+                <ul id="whiteForward"></ul>
+            </div>
+            <div class="position-group">
+                <h3>Defensemen</h3>
+                <ul id="whiteDefense"></ul>
+            </div>
         </div>
     </div>
-    <div class="team white-team">
-        <h2>White Team</h2>
-        <div class="position-group">
-            <h3>Forwards</h3>
-            <ul id="whiteForward"></ul>
-        </div>
-        <div class="position-group">
-            <h3>Defensemen</h3>
-            <ul id="whiteDefense"></ul>
-        </div>
-    </div>
-</div>
 </body>
 </html>
