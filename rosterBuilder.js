@@ -112,6 +112,9 @@ function clearGrid() {
     localStorage.removeItem('gridData');
     localStorage.removeItem('headers');
 
+    // Clear the file input (so you can upload another CSV after clearing)
+    document.getElementById('fileInput').value = ''; // Reset file input
+
     // Clear the roster sections (forwards and defense for both teams)
     ['redForward', 'redDefense', 'whiteForward', 'whiteDefense'].forEach(id => {
         document.getElementById(id).innerHTML = '';
