@@ -1,88 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WSC Roster Builder</title>
+
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
     <style>
+        /* Base Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             line-height: 1.6;
             margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        /* Instructions */
+        .instructions {
+            background-color: #fff;
             padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .section {
-            margin-bottom: 20px;
+        .instructions h2 {
+            margin-top: 0;
+            color: #444;
         }
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
+        .instructions ol {
+            padding-left: 20px;
         }
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
+        /* Buttons */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
         }
 
         button {
-            margin-right: 10px;
-            padding: 5px 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            border: none;
+        }
+
+        td {
+            background-color: #fff;
+            padding: 12px;
+            border: none;
+            vertical-align: middle;
+        }
+
+        tr {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Input Fields */
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px 12px;
+            margin: 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Delete Button */
+        .delete-button {
+            background-color: #dc3545;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                margin: 10px 0;
+                width: 90%;
+            }
+
+            th, td {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>WSC Roster Builder</h1>
+    <div class="container">
+        <h1>WSC Roster Builder</h1>
 
-    <div id="builderSection" class="section">
-        <div class="instructions">
-            <h2>Instructions:</h2>
-            <ol>
-                <li>Upload a CSV file with player data using the "Upload CSV" button.</li>
-                <li>Edit player information directly in the grid [Name, Skill, Defense/Offense, Attendance].</li>
-                <li>Add or remove rows as needed.</li>
-                <li>Click "Generate Roster" to create balanced teams.</li>
-            </ol>
+        <div id="builderSection" class="section">
+            <!-- Instructions -->
+            <div class="instructions">
+                <h2>Instructions:</h2>
+                <ol>
+                    <li>Upload a CSV file with player data using the "Upload CSV" button.</li>
+                    <li>Edit player information directly in the grid [Name, Skill, Defense/Offense, Attendance].</li>
+                    <li>Add or remove rows as needed.</li>
+                    <li>Click "Generate Roster" to create balanced teams.</li>
+                </ol>
+            </div>
+
+            <!-- Button Group -->
+            <div class="button-group">
+                <input type="file" id="csvFile" accept=".csv" style="display:none;">
+                <button onclick="uploadCSV()">Upload CSV</button>
+                <button onclick="addRow()">Add Row</button>
+                <button onclick="generateRoster()">Generate Roster</button>
+                <button onclick="clearGrid()">Clear</button>
+            </div>
+
+            <!-- Player Grid Table -->
+            <table id="playerGrid">
+                <thead>
+                    <tr>
+                        <th style="width: 18%;">First Name</th>
+                        <th style="width: 18%;">Last Name</th>
+                        <th style="width: 16%;">Skill</th>
+                        <th style="width: 16%;">Defense</th>
+                        <th style="width: 16%;">Attendance</th>
+                        <th style="width: 16%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
-
-        <!-- Hidden file input -->
-        <input type="file" id="csvFile" accept=".csv" style="display:none;">
-        <!-- Modified Upload CSV button -->
-        <button onclick="uploadCSV()">Upload CSV</button>
-        <button onclick="addRow()">Add Row</button>
-        <button onclick="generateRoster()">Generate Roster</button>
-        <button onclick="clearGrid()">Clear</button>
-
-        <table id="playerGrid">
-            <thead>
-                <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Skill</th>
-                    <th>Defense</th>
-                    <th>Attendance</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
     </div>
 
+    <!-- Scripts -->
     <script>
         function uploadCSV() {
             const fileInput = document.getElementById('csvFile');
-            // Trigger the file selection dialog
             fileInput.click();
         }
 
-        // Add an event listener to handle the file once it's selected
+        // Handle file selection
         document.getElementById('csvFile').addEventListener('change', function(event) {
             const file = event.target.files[0];
 
@@ -117,14 +234,17 @@
             fields.forEach((field, index) => {
                 const cell = row.insertCell();
                 const input = document.createElement('input');
-                input.type = index === 2 || index === 3 || index === 4 ? 'number' : 'text';
+                input.type = index >= 2 && index <= 4 ? 'number' : 'text';
                 input.value = field;
+                input.min = 0;
+                input.max = 10;
                 cell.appendChild(input);
             });
 
             const actionCell = row.insertCell();
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
+            deleteButton.className = 'delete-button';
             deleteButton.onclick = function () { tbody.removeChild(row); };
             actionCell.appendChild(deleteButton);
         }
@@ -138,9 +258,9 @@
             document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
                 const inputs = row.querySelectorAll('input');
                 players.push({
-                    firstName: inputs[0].value,
-                    lastName: inputs[1].value,
-                    skill: parseInt(inputs[2].value),
+                    firstName: inputs[0].value.trim(),
+                    lastName: inputs[1].value.trim(),
+                    skill: parseInt(inputs[2].value) || 0,
                     defense: inputs[3].value === '1',
                     attendance: inputs[4].value === '1'
                 });
