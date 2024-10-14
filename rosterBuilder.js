@@ -15,13 +15,11 @@ function toggleView() {
         document.getElementById('builderSection').classList.remove('visible');
         document.getElementById('rosterSection').classList.add('visible');
         document.getElementById('toggleButton').textContent = 'Back to Builder';
-        document.getElementById('backToTop').style.display = 'inline'; // Show Back to Top button
         currentView = 'roster';
     } else {
         document.getElementById('builderSection').classList.add('visible');
         document.getElementById('rosterSection').classList.remove('visible');
         document.getElementById('toggleButton').textContent = 'View Roster';
-        document.getElementById('backToTop').style.display = 'none'; // Hide Back to Top button
         currentView = 'builder';
     }
 }
@@ -107,12 +105,29 @@ function loadGridData() {
 }
 
 function clearGrid() {
+    // Clear the grid data and headers
     gridData = [];
     headers = [];
     localStorage.removeItem('gridData');
     localStorage.removeItem('headers');
-    renderGrid(); // This will now clear the headers and the rows
+
+    // Clear the roster sections (forwards and defense for both teams)
+    ['redForward', 'redDefense', 'whiteForward', 'whiteDefense'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+    });
+
+    // Re-render the empty grid (top grid)
+    renderGrid();
+
+    // Switch back to the builder view
+    if (currentView === 'roster') {
+        toggleView(); // Switch back to the builder if in the roster view
+    }
+
+    // Scroll back to the top of the page
+    scrollToTop();
 }
+
 
 
 function generateRosters(gridData) {
