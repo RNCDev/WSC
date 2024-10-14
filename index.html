@@ -153,16 +153,16 @@
         }
 
         function generateRoster() {
-        const players = [];
-        document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
+            const players = [];
+            document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
             const inputs = row.querySelectorAll('input');
-            players.push({
-                firstName: inputs[0].value.trim(),
-                lastName: inputs[1].value.trim(),
-                skill: parseInt(inputs[2].value) || 0,
-                defense: inputs[3].value === '1',  // Defense is true/false
-                attendance: inputs[4].value === '1' // Attendance is true/false
-            });
+                players.push({
+                    firstName: inputs[0].value.trim(),
+                    lastName: inputs[1].value.trim(),
+                    skill: parseInt(inputs[2].value) || 0,
+                    defense: inputs[3].value === '1',  // Defense is true/false
+                    attendance: inputs[4].value === '1' // Attendance is true/false
+                });
         });
     
         // Separate players into forwards and defensemen
@@ -187,7 +187,6 @@
     
         // Redirect to roster.html
         window.location.href = 'roster.html';
-        }
         
         // Function to distribute players evenly between two teams based on skill level
         function assignPlayersToTeams(players, redTeam, whiteTeam) {
@@ -207,13 +206,12 @@
         
         
         // Store teams in localStorage to be used in roster.html
-            localStorage.setItem('redTeam', JSON.stringify(redTeam));
-            localStorage.setItem('whiteTeam', JSON.stringify(whiteTeam));
+        localStorage.setItem('redTeam', JSON.stringify(redTeam));
+        localStorage.setItem('whiteTeam', JSON.stringify(whiteTeam));
 
-            // Redirect to roster.html
-            window.location.href = 'roster.html';
-        }
-
+        // Redirect to roster.html
+        window.location.href = 'roster.html';
+    
         // Load grid data from localStorage when the page is loaded
         document.addEventListener('DOMContentLoaded', loadGridData);
     </script>
