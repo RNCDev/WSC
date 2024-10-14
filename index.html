@@ -185,7 +185,11 @@
         function generateRoster() {
             const players = [];
             document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
+<<<<<<< HEAD
                 const inputs = row.querySelectorAll('input, select'); // Include select elements as well
+=======
+            const inputs = row.querySelectorAll('input');
+>>>>>>> parent of 70d89b8 (Update index.html)
                 players.push({
                     firstName: inputs[0].value.trim(),
                     lastName: inputs[1].value.trim(),
@@ -193,6 +197,7 @@
                     defense: parseInt(inputs[3].value) === 1,  // Convert defense value to a boolean
                     attendance: parseInt(inputs[4].value) === 1 // Convert attendance value to a boolean
                 });
+<<<<<<< HEAD
             });
         
             // Separate players into forwards and defensemen
@@ -218,27 +223,55 @@
         
             // Redirect to roster.html
             window.location.href = 'roster.html';
+=======
+        });
+    
+        // Separate players into forwards and defensemen
+        const forwards = players.filter(player => !player.defense);
+        const defensemen = players.filter(player => player.defense);
+    
+        // Sort both forwards and defensemen by skill level (highest to lowest)
+        forwards.sort((a, b) => b.skill - a.skill);
+        defensemen.sort((a, b) => b.skill - a.skill);
+    
+        const redTeam = { forwards: [], defensemen: [] };
+        const whiteTeam = { forwards: [], defensemen: [] };
+    
+        // Distribute forwards to balance skill levels
+        assignPlayersToTeams(forwards, redTeam.forwards, whiteTeam.forwards);
+        // Distribute defensemen to balance skill levels
+        assignPlayersToTeams(defensemen, redTeam.defensemen, whiteTeam.defensemen);
+    
+        // Store teams in localStorage
+        localStorage.setItem('redTeam', JSON.stringify([...redTeam.forwards, ...redTeam.defensemen]));
+        localStorage.setItem('whiteTeam', JSON.stringify([...whiteTeam.forwards, ...whiteTeam.defensemen]));
+    
+        // Redirect to roster.html
+        window.location.href = 'roster.html';
+>>>>>>> parent of 70d89b8 (Update index.html)
         }
-        
+
         // Function to distribute players evenly between two teams based on skill level
         function assignPlayersToTeams(players, redTeam, whiteTeam) {
             let redSkill = 0;
             let whiteSkill = 0;
         
             players.forEach((player) => {
+<<<<<<< HEAD
                 // Random assignment but ensures skill balance
                 if (redSkill <= whiteSkill && redTeam.length < Math.ceil(players.length / 2)) {
+=======
+                if (redSkill <= whiteSkill) {
+>>>>>>> parent of 70d89b8 (Update index.html)
                     redTeam.push(player);
                     redSkill += player.skill;
-                } else if (whiteTeam.length < Math.ceil(players.length / 2)) {
+                } else {
                     whiteTeam.push(player);
                     whiteSkill += player.skill;
-                } else {
-                    redTeam.push(player);
-                    redSkill += player.skill;
                 }
             });
         }
+<<<<<<< HEAD
         
         // Shuffle function to randomize player list
         function shuffle(array) {
@@ -248,6 +281,8 @@
             }
             return array;
         }
+=======
+>>>>>>> parent of 70d89b8 (Update index.html)
 
         // Load grid data from localStorage when the page is loaded
         document.addEventListener('DOMContentLoaded', loadGridData);
