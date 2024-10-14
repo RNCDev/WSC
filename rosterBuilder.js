@@ -109,8 +109,9 @@ function clearGrid() {
     headers = [];
     localStorage.removeItem('gridData');
     localStorage.removeItem('headers');
-    renderGrid();
+    renderGrid(); // This will now clear the headers and the rows
 }
+
 
 function generateRosters(gridData) {
     const attendingPlayers = gridData.filter(player => player.Attendance === "1");
