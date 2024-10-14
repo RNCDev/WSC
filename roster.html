@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WSC Roster</title>
@@ -48,18 +47,17 @@
             color: #0056b3;
         }
 
-        /* Team Containers */
+        /* Teams Container */
         .teams {
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
+            gap: 20px;
         }
 
         .team {
-            flex: 0 0 48%;
+            flex: 1;
             background-color: #fff;
             padding: 20px;
-            margin-bottom: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -124,8 +122,8 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .team {
-                flex: 0 0 100%;
+            .teams {
+                flex-direction: column;
             }
 
             li {
