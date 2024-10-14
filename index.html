@@ -120,7 +120,7 @@
         function addRow(playerData) {
             const tbody = document.querySelector('#playerGrid tbody');
             const row = tbody.insertRow();
-
+        
             const fields = playerData || ['', '', '', '', ''];
             fields.forEach((field, index) => {
                 const cell = row.insertCell();
@@ -132,7 +132,7 @@
                 input.onchange = saveGridData; // Save grid data whenever any input changes
                 cell.appendChild(input);
             });
-
+        
             const actionCell = row.insertCell();
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
@@ -142,6 +142,9 @@
                 saveGridData(); // Save grid data after deleting a row
             };
             actionCell.appendChild(deleteButton);
+        
+            // Scroll to the newly added row
+            row.scrollIntoView({ behavior: 'smooth' });
         }
 
         function clearGrid() {
