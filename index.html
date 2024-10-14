@@ -153,32 +153,60 @@
         }
 
         function generateRoster() {
-            const players = [];
-            document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                players.push({
-                    firstName: inputs[0].value.trim(),
-                    lastName: inputs[1].value.trim(),
-                    skill: parseInt(inputs[2].value) || 0,
-                    defense: inputs[3].value === '1',
-                    attendance: inputs[4].value === '1'
-                });
+        const players = [];
+        document.querySelectorAll('#playerGrid tbody tr').forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            players.push({
+                firstName: inputs[0].value.trim(),
+                lastName: inputs[1].value.trim(),
+                skill: parseInt(inputs[2].value) || 0,
+                defense: inputs[3].value === '1',  // Defense is true/false
+                attendance: inputs[4].value === '1' // Attendance is true/false
             });
-
-            // Simple algorithm to balance teams (you may want to improve this)
-            players.sort((a, b) => b.skill - a.skill);
-            const redTeam = [];
-            const whiteTeam = [];
-
+        });
+    
+        // Separate players into forwards and defensemen
+        const forwards = players.filter(player => !player.defense);
+        const defensemen = players.filter(player => player.defense);
+    
+        // Sort both forwards and defensemen by skill level (highest to lowest)
+        forwards.sort((a, b) => b.skill - a.skill);
+        defensemen.sort((a, b) => b.skill - a.skill);
+    
+        const redTeam = { forwards: [], defensemen: [] };
+        const whiteTeam = { forwards: [], defensemen: [] };
+    
+        // Distribute forwards to balance skill levels
+        assignPlayersToTeams(forwards, redTeam.forwards, whiteTeam.forwards);
+        // Distribute defensemen to balance skill levels
+        assignPlayersToTeams(defensemen, redTeam.defensemen, whiteTeam.defensemen);
+    
+        // Store teams in localStorage
+        localStorage.setItem('redTeam', JSON.stringify([...redTeam.forwards, ...redTeam.defensemen]));
+        localStorage.setItem('whiteTeam', JSON.stringify([...whiteTeam.forwards, ...whiteTeam.defensemen]));
+    
+        // Redirect to roster.html
+        window.location.href = 'roster.html';
+        }
+        
+        // Function to distribute players evenly between two teams based on skill level
+        function assignPlayersToTeams(players, redTeam, whiteTeam) {
+            let redSkill = 0;
+            let whiteSkill = 0;
+        
             players.forEach((player, index) => {
-                if (index % 2 === 0) {
+                if (redSkill <= whiteSkill) {
                     redTeam.push(player);
+                    redSkill += player.skill;
                 } else {
                     whiteTeam.push(player);
+                    whiteSkill += player.skill;
                 }
             });
-
-            // Store teams in localStorage to be used in roster.html
+        }
+        
+        
+        // Store teams in localStorage to be used in roster.html
             localStorage.setItem('redTeam', JSON.stringify(redTeam));
             localStorage.setItem('whiteTeam', JSON.stringify(whiteTeam));
 
