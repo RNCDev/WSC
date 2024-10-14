@@ -143,8 +143,6 @@
             };
             actionCell.appendChild(deleteButton);
         
-            // Scroll to the newly added row
-            row.scrollIntoView({ behavior: 'smooth' });
         }
 
         function clearGrid() {
@@ -173,10 +171,7 @@
             forwards = shuffle(forwards);
             defensemen = shuffle(defensemen);
         
-            // Sort both forwards and defensemen by skill level (highest to lowest)
-            forwards.sort((a, b) => b.skill - a.skill);
-            defensemen.sort((a, b) => b.skill - a.skill);
-        
+            // No sorting by skill anymore to allow randomness
             const redTeam = { forwards: [], defensemen: [] };
             const whiteTeam = { forwards: [], defensemen: [] };
         
@@ -199,6 +194,7 @@
             let whiteSkill = 0;
         
             players.forEach((player) => {
+                // Random assignment but ensures skill balance
                 if (redSkill <= whiteSkill && redTeam.length < Math.ceil(players.length / 2)) {
                     redTeam.push(player);
                     redSkill += player.skill;
@@ -220,7 +216,6 @@
             }
             return array;
         }
-
 
         // Load grid data from localStorage when the page is loaded
         document.addEventListener('DOMContentLoaded', loadGridData);
