@@ -30,6 +30,7 @@ function handleFileUpload(event) {
         complete: function(results) {
             gridData = results.data;
             headers = results.meta.fields;
+            console.log('Parsed CSV Data:', gridData); // Log parsed data for debugging
             saveGridData();
             renderGrid();
             document.getElementById('builderSection').classList.add('visible');
@@ -191,13 +192,15 @@ function displayRosters(teamData) {
     teamData.forEach(player => {
         const li = document.createElement('li');
         li.textContent = `${player.First} ${player.Last} (Skill: ${player.Skill})`;
-        const listId = `${player.team.toLowerCase()}${player.position}`;
+
+        // Use the correct list ID based on team and position
+        const listId = `${player.team.toLowerCase()}${player.position.toLowerCase()}`;
         
         const listElement = document.getElementById(listId);
         if (listElement) {
             listElement.appendChild(li); // Append player to the correct team and position
         } else {
-            console.warn(`No list found for ${listId}`);
+            console.warn(`No list found for ${listId}`); // Log if the list is not found
         }
     });
 }
