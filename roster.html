@@ -51,20 +51,7 @@
         function displayTeam(teamData, forwardsList, defensemenList) {
             teamData.forEach(player => {
                 const li = document.createElement('li');
-                const playerInfo = document.createElement('div');
-                playerInfo.className = 'player-info';
-
-                const name = document.createElement('span');
-                name.className = 'player-name';
-                name.textContent = `${player.firstName} ${player.lastName}`;
-
-                const skill = document.createElement('span');
-                skill.className = 'player-skill';
-                skill.textContent = `Skill Level: ${player.skill}`;
-
-                playerInfo.appendChild(name);
-                playerInfo.appendChild(skill);
-                li.appendChild(playerInfo);
+                li.textContent = `${player.firstName} ${player.lastName} [${player.skill}]`;
 
                 if (player.defense) {
                     defensemenList.appendChild(li);
